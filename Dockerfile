@@ -16,6 +16,6 @@ COPY app/ app/
 # 複製壓縮版 DB（啟動時自動解壓）
 COPY data/tmdb.db.gz data/tmdb.db.gz
 
-EXPOSE 8000
+EXPOSE 8080
 
-CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["uvicorn", "app.main:app", "--host", "0.0.0.0", "--port", "8080"]
