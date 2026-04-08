@@ -1,0 +1,29 @@
+# Virtual environment
+.venv/
+**/__pycache__/
+**/*.pyc
+
+# Large raw data files (keep tmdb.db.gz for deployment)
+data/tmdb.db
+data/factories.json
+data/factories_translated.json
+data/moea_factories.csv
+data/government_records_raw.json
+data/patents_raw.json
+data/supply_chain_raw.json
+data/supply_chain_matched.json
+data/listed_companies.json
+data/annual_reports/
+data/factories.db
+data/.gstack/
+
+# Logs
+*.log
+
+# macOS
+.DS_Store
+
+# LLM progress
+data/llm_progress.json
+.env
+.gstack/

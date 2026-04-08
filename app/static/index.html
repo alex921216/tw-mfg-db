@@ -1,0 +1,2247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Taiwan Manufacturing Database (TMDB)</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #1a73e8;
+      --primary-hover: #1558b0;
+      --text: #202124;
+      --text-secondary: #5f6368;
+      --border: #dadce0;
+      --border-hover: #bdc1c6;
+      --danger: #d93025;
+      --success: #1e8e3e;
+      --row-hover: #f1f3f4;
+      --shadow: 0 1px 3px rgba(60,64,67,0.15), 0 2px 6px rgba(60,64,67,0.1);
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    .header h1 {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    .header p {
+      margin-top: 4px;
+      font-size: 14px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ── Search Card ── */
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .search-field {
+      flex: 1 1 280px;
+      min-width: 0;
+    }
+
+    .search-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .search-field input,
+    .search-field select {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .search-field input:focus,
+    .search-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .search-actions {
+      display: flex;
+      gap: 8px;
+      align-items: flex-end;
+      flex-shrink: 0;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 1px 4px rgba(26,115,232,0.4);
+    }
+
+    .btn-secondary {
+      background: var(--surface);
+      color: var(--primary);
+      border: 1px solid var(--border);
+    }
+
+    .btn-secondary:hover {
+      background: #e8f0fe;
+      border-color: var(--primary);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Stats Bar ── */
+    .stats-bar {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 12px 20px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--text-secondary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .stats-bar .stat-dot {
+      display: inline-block;
+      width: 4px;
+      height: 4px;
+      background: var(--border);
+      border-radius: 50%;
+    }
+
+    .stats-bar strong {
+      color: var(--text);
+    }
+
+    /* ── Results Card ── */
+    .results-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .results-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .results-count {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Table ── */
+    .table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    thead th {
+      padding: 12px 16px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      background: #fafafa;
+    }
+
+    tbody tr {
+      transition: background 0.1s;
+      cursor: default;
+    }
+
+    tbody tr:hover {
+      background: var(--row-hover);
+    }
+
+    tbody tr + tr {
+      border-top: 1px solid var(--border);
+    }
+
+    tbody td {
+      padding: 12px 16px;
+      vertical-align: middle;
+    }
+
+    .company-name-en {
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .company-name-zh {
+      font-size: 11px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    a.company-link {
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    a.company-link:hover {
+      text-decoration: underline;
+    }
+
+    button.company-link {
+      background: none;
+      border: none;
+      padding: 0;
+      font-family: inherit;
+      font-size: inherit;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    button.company-link:hover {
+      text-decoration: underline;
+    }
+
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .cert-badge {
+      display: inline-block;
+      padding: 2px 7px;
+      border-radius: 10px;
+      font-size: 10px;
+      font-weight: 500;
+      margin: 1px 2px 1px 0;
+      white-space: nowrap;
+    }
+
+    .cert-badge-typical {
+      background: #f1f3f4;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .cert-badge-confirmed {
+      background: #e6f4ea;
+      color: var(--success);
+      border: 1px solid #c8e6c9;
+    }
+
+    .cert-list {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+      max-width: 200px;
+    }
+
+    /* ── Empty / Loading States ── */
+    .state-center {
+      padding: 60px 24px;
+      text-align: center;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+      margin-bottom: 12px;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    .empty-icon {
+      font-size: 36px;
+      margin-bottom: 12px;
+    }
+
+    /* ── Pagination ── */
+    .pagination {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .pagination-info {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .pagination-buttons {
+      display: flex;
+      gap: 8px;
+    }
+
+    .btn-page {
+      height: 34px;
+      padding: 0 16px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--surface);
+      color: var(--text);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      font-family: inherit;
+    }
+
+    .btn-page:hover:not(:disabled) {
+      background: var(--row-hover);
+      border-color: var(--border-hover);
+    }
+
+    .btn-page:disabled {
+      opacity: 0.4;
+      cursor: not-allowed;
+    }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--surface);
+      border-top: 1px solid var(--border);
+      padding: 20px 24px;
+      margin-top: 24px;
+    }
+
+    .footer-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      font-size: 12px;
+      color: var(--text-secondary);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* ── Award Badge (profile sidebar) ── */
+    .award-badge {
+      display: inline-flex;
+      flex-direction: column;
+      gap: 2px;
+      padding: 6px 10px;
+      border-radius: 6px;
+      background: #fffbeb;
+      border: 1px solid #f9d44b;
+      margin: 3px 3px 3px 0;
+      vertical-align: top;
+    }
+
+    .award-badge-name {
+      font-size: 12px;
+      font-weight: 600;
+      color: #92400e;
+    }
+
+    .award-badge-agency {
+      font-size: 10px;
+      color: #b45309;
+    }
+
+    .award-badge-year {
+      font-size: 10px;
+      color: #d97706;
+    }
+
+    .award-badges-wrap {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0;
+    }
+
+    /* ── Error Banner ── */
+    .error-banner {
+      background: #fce8e6;
+      border: 1px solid #f5c6c3;
+      border-radius: 6px;
+      padding: 12px 16px;
+      margin-bottom: 16px;
+      font-size: 13px;
+      color: var(--danger);
+      display: none;
+    }
+
+    .error-banner.visible {
+      display: block;
+    }
+
+    /* ── Company Profile Sidebar ── */
+    .sidebar-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.3);
+      z-index: 200;
+    }
+
+    .sidebar-overlay.visible {
+      display: block;
+    }
+
+    .sidebar {
+      position: fixed;
+      top: 0;
+      right: -480px;
+      width: 480px;
+      max-width: 100vw;
+      height: 100vh;
+      background: var(--surface);
+      border-left: 1px solid var(--border);
+      box-shadow: -4px 0 24px rgba(60,64,67,0.15);
+      z-index: 201;
+      display: flex;
+      flex-direction: column;
+      transition: right 0.25s ease;
+      overflow: hidden;
+    }
+
+    .sidebar.open {
+      right: 0;
+    }
+
+    .sidebar-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+      flex-shrink: 0;
+    }
+
+    .sidebar-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .sidebar-close {
+      width: 32px;
+      height: 32px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      border-radius: 6px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--text-secondary);
+      transition: background 0.15s;
+      font-size: 18px;
+      line-height: 1;
+    }
+
+    .sidebar-close:hover {
+      background: var(--row-hover);
+      color: var(--text);
+    }
+
+    .sidebar-body {
+      flex: 1;
+      overflow-y: auto;
+      padding: 20px;
+    }
+
+    .sidebar-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 200px;
+      color: var(--text-secondary);
+    }
+
+    .profile-section {
+      margin-bottom: 20px;
+    }
+
+    .profile-section-title {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-field {
+      display: flex;
+      gap: 12px;
+      padding: 6px 0;
+    }
+
+    .profile-field-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      flex-shrink: 0;
+      width: 120px;
+    }
+
+    .profile-field-value {
+      font-size: 13px;
+      color: var(--text);
+      font-weight: 500;
+      flex: 1;
+      word-break: break-word;
+    }
+
+    .profile-name-en {
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .profile-name-zh {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 16px;
+    }
+
+    /* ── Supply Chain sidebar section ── */
+    .sc-section-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sc-section-group {
+      margin-bottom: 10px;
+    }
+
+    .sc-section-group-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.4px;
+      margin-bottom: 4px;
+    }
+
+    .sc-section-item {
+      font-size: 13px;
+      color: var(--text);
+      padding: 3px 0;
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+    }
+
+    .sc-section-item-name {
+      font-weight: 500;
+    }
+
+    .sc-section-item-meta {
+      font-size: 11px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Patents sidebar section ── */
+    .patent-section-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .patent-item {
+      padding: 6px 0;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .patent-item:last-child {
+      border-bottom: none;
+    }
+
+    .patent-item-title {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      line-height: 1.4;
+    }
+
+    .patent-item-ipc {
+      font-size: 11px;
+      color: var(--text-secondary);
+      font-family: monospace;
+      margin-top: 2px;
+    }
+
+    .patent-more {
+      font-size: 12px;
+      color: var(--text-secondary);
+      padding-top: 6px;
+      font-style: italic;
+    }
+
+    .profile-empty-note {
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 768px) {
+      /* Hide Products (col 3), Reg. Date (col 6), Capital (col 7) on mobile */
+      #resultsTable th:nth-child(3), #resultsTable td:nth-child(3),
+      #resultsTable th:nth-child(6), #resultsTable td:nth-child(6),
+      #resultsTable th:nth-child(7), #resultsTable td:nth-child(7) {
+        display: none;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main {
+        padding: 16px;
+      }
+
+      .header {
+        padding: 16px;
+      }
+
+      .header h1 {
+        font-size: 18px;
+      }
+
+      .search-row {
+        flex-direction: column;
+      }
+
+      .search-field {
+        flex: 1 1 100%;
+      }
+
+      .search-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .pagination {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .sidebar {
+        width: 100vw;
+      }
+    }
+
+    /* ── Contact Info Button & Panel ── */
+    .btn-contact {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 2px 8px;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      background: var(--surface);
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 500;
+      cursor: pointer;
+      font-family: inherit;
+      transition: border-color 0.15s, color 0.15s, background 0.15s;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .btn-contact:hover {
+      border-color: var(--primary);
+      color: var(--primary);
+      background: #e8f0fe;
+    }
+
+    .contact-row {
+      display: none;
+      background: #f8f9fa;
+      border-top: 1px solid var(--border);
+    }
+
+    .contact-row.open {
+      display: table-row;
+    }
+
+    .contact-panel {
+      padding: 12px 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 24px;
+    }
+
+    .contact-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+      min-width: 200px;
+    }
+
+    .contact-item-icon {
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .contact-item-body {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .contact-item-label {
+      font-size: 10px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-secondary);
+    }
+
+    .contact-item-value {
+      font-size: 12px;
+      color: var(--text);
+    }
+
+    .contact-item a {
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 12px;
+    }
+
+    .contact-item a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Suggest Dropdown ── */
+    .suggest-dropdown {
+      position: absolute;
+      top: 100%;
+      left: 0;
+      right: 0;
+      background: #fff;
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 8px 8px;
+      box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+      z-index: 200;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .suggest-item {
+      padding: 8px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+
+    .suggest-item:hover,
+    .suggest-item.active {
+      background: var(--row-hover);
+    }
+
+    .suggest-type {
+      font-size: 10px;
+      color: #9aa0a6;
+      background: var(--row-hover);
+      padding: 2px 6px;
+      border-radius: 4px;
+      text-transform: uppercase;
+      flex-shrink: 0;
+    }
+
+    .suggest-count {
+      margin-left: auto;
+      font-size: 11px;
+      color: #9aa0a6;
+      flex-shrink: 0;
+    }
+
+    /* ── Tabs ── */
+    .tabs-nav {
+      display: flex;
+      gap: 4px;
+      padding: 0 16px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #dadce0;
+      overflow-x: auto;
+      margin-bottom: 16px;
+    }
+    .tab-btn {
+      padding: 10px 16px;
+      border: none;
+      background: none;
+      cursor: pointer;
+      font-size: 14px;
+      color: #5f6368;
+      border-bottom: 2px solid transparent;
+      white-space: nowrap;
+      transition: color 0.2s, border-color 0.2s;
+      font-family: inherit;
+    }
+    .tab-btn:hover { color: #1a73e8; }
+    .tab-btn.active {
+      color: #1a73e8;
+      border-bottom-color: #1a73e8;
+      font-weight: 500;
+    }
+    .tab-panel { display: none; }
+    .tab-panel.active { display: block; }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <h1>Taiwan Manufacturing Database (TMDB)</h1>
+      <p>Search 90,000+ Taiwan factories in English</p>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main">
+
+    <!-- Error Banner -->
+    <div class="error-banner" id="errorBanner" role="alert"></div>
+
+    <!-- Stats Bar -->
+    <div class="stats-bar" id="statsBar">
+      <span id="statsText">Loading statistics...</span>
+    </div>
+
+    <!-- Tab Navigation -->
+    <div class="tabs-nav" role="tablist" aria-label="Search categories">
+      <button class="tab-btn active" role="tab" data-tab="factories" id="tab-factories">
+        🏭 Factories
+      </button>
+      <button class="tab-btn" role="tab" data-tab="supply-chain" id="tab-supply-chain">
+        🔗 Supply Chain
+      </button>
+      <button class="tab-btn" role="tab" data-tab="patents" id="tab-patents">
+        📄 Patents
+      </button>
+      <button class="tab-btn" role="tab" data-tab="gov-records" id="tab-gov-records">
+        🏛 Government Records
+      </button>
+    </div>
+
+    <!-- Factories Tab Panel -->
+    <div class="tab-panel active" id="panel-factories">
+
+    <!-- Search Card -->
+    <div class="search-card">
+      <div class="search-row">
+        <div class="search-field" style="flex: 2 1 320px; position: relative;">
+          <label for="searchInput">Search</label>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Search by company name, product, or capability..."
+            autocomplete="off"
+          >
+          <div id="suggestDropdown" class="suggest-dropdown" style="display:none;"></div>
+        </div>
+
+        <div class="search-field">
+          <label for="industrySelect">Industry</label>
+          <div class="select-wrapper">
+            <select id="industrySelect">
+              <option value="">All Industries</option>
+            </select>
+          </div>
+          <div id="industryCerts" style="font-size:10px;color:#5f6368;margin-top:4px;max-width:280px;line-height:1.4;display:none;">
+            <span style="color:#9aa0a6;">Common standards:</span> <span id="industryCertsText"></span>
+          </div>
+        </div>
+
+        <div class="search-field">
+          <label for="citySelect">City / District</label>
+          <div class="select-wrapper">
+            <select id="citySelect">
+              <option value="">All Cities</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="search-field">
+          <label for="sortSelect">Sort By</label>
+          <div class="select-wrapper">
+            <select id="sortSelect">
+              <option value="">Default</option>
+              <option value="capital_desc">Capital: High &rarr; Low</option>
+              <option value="capital_asc">Capital: Low &rarr; High</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="search-actions">
+          <button class="btn btn-primary" id="searchBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Search
+          </button>
+          <button class="btn btn-secondary" id="exportBtn" type="button">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Download CSV
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Results Card -->
+    <div class="results-card">
+      <div class="results-header">
+        <span class="results-count" id="resultsCount">&nbsp;</span>
+      </div>
+
+      <div class="table-wrapper">
+        <table id="resultsTable" role="grid">
+          <thead>
+            <tr>
+              <th scope="col">Company Name</th>
+              <th scope="col">Industry</th>
+              <th scope="col">Products</th>
+              <th scope="col">City / District</th>
+              <th scope="col">Tax ID</th>
+              <th scope="col">Reg. Date</th>
+              <th scope="col">Capital (NT$)</th>
+            </tr>
+          </thead>
+          <tbody id="resultsBody">
+            <!-- rows injected by JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Loading / Empty States -->
+      <div class="state-center" id="stateLoading" style="display:none;">
+        <div class="spinner" role="status" aria-label="Loading"></div>
+        <div>Loading factories...</div>
+      </div>
+
+      <div class="state-center" id="stateEmpty" style="display:none;">
+        <div class="empty-icon" aria-hidden="true">&#128269;</div>
+        <div>No factories found matching your search.</div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" id="pagination">
+        <span class="pagination-info" id="paginationInfo">&nbsp;</span>
+        <div class="pagination-buttons">
+          <button class="btn-page" id="prevBtn" type="button" disabled>&#8592; Previous</button>
+          <button class="btn-page" id="nextBtn" type="button" disabled>Next &#8594;</button>
+        </div>
+      </div>
+    </div>
+
+    </div><!-- end panel-factories -->
+
+    <!-- Supply Chain Tab Panel -->
+    <div class="tab-panel" id="panel-supply-chain">
+      <div class="search-card">
+        <div class="search-row">
+          <div class="search-field" style="flex: 2;">
+            <label for="scCompanyInput">Company Name</label>
+            <input type="text" id="scCompanyInput" placeholder="e.g. TSMC, 台積電, Foxconn, 鴻海">
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-primary" id="scSearchBtn" type="button">🔍 Search</button>
+          </div>
+        </div>
+      </div>
+      <div class="results-card">
+        <div class="results-header">
+          <span id="scResultsCount"></span>
+        </div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr>
+              <th>Supplier</th><th>Category</th><th>Product</th><th>Factory Match</th>
+            </tr></thead>
+            <tbody id="scResultsBody"></tbody>
+          </table>
+        </div>
+        <div id="scStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
+        <div id="scStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No supply chain records found.</div>
+        <div id="scStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search for a company to view its supply chain. Try: TSMC, Foxconn, Delta</div>
+      </div>
+    </div><!-- end panel-supply-chain -->
+
+    <!-- Patents Tab Panel -->
+    <div class="tab-panel" id="panel-patents">
+      <div class="search-card">
+        <div class="search-row">
+          <div class="search-field" style="flex: 2;">
+            <label for="patInput">Applicant Name</label>
+            <input type="text" id="patInput" placeholder="e.g. 倍利科技, 映興電子, 視覺輔助">
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-primary" id="patSearchBtn" type="button">🔍 Search</button>
+          </div>
+        </div>
+      </div>
+      <div class="results-card">
+        <div class="results-header"><span id="patResultsCount"></span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr>
+              <th>Patent Number</th><th>Title</th><th>Applicant</th><th>Tech Category</th><th>Date</th>
+            </tr></thead>
+            <tbody id="patResultsBody"></tbody>
+          </table>
+        </div>
+        <div id="patStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
+        <div id="patStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No patents found.</div>
+        <div id="patStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search patents by applicant name or keyword. Try: 倍利科技</div>
+      </div>
+    </div><!-- end panel-patents -->
+
+    <!-- Government Records Tab Panel -->
+    <div class="tab-panel" id="panel-gov-records">
+      <div class="search-card">
+        <div class="search-row">
+          <div class="search-field" style="flex: 2;">
+            <label for="govInput">Company Name</label>
+            <input type="text" id="govInput" placeholder="e.g. 三隆齒輪, 小巨人獎, 國家磐石獎">
+          </div>
+          <div class="search-actions">
+            <button class="btn btn-primary" id="govSearchBtn" type="button">🔍 Search</button>
+          </div>
+        </div>
+      </div>
+      <div class="results-card">
+        <div class="results-header"><span id="govResultsCount"></span></div>
+        <div class="table-wrapper">
+          <table>
+            <thead><tr>
+              <th>Company</th><th>Award/Program</th><th>Agency</th><th>Details</th>
+            </tr></thead>
+            <tbody id="govResultsBody"></tbody>
+          </table>
+        </div>
+        <div id="govStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
+        <div id="govStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No government records found.</div>
+        <div id="govStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search government awards and subsidies. Try: 小巨人獎</div>
+      </div>
+    </div><!-- end panel-gov-records -->
+
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <div class="footer-inner">
+      <div>Data source: Taiwan Ministry of Economic Affairs (MOEA) Factory Registration</div>
+      <div>Open data under Taiwan Government Open Data License</div>
+    </div>
+  </footer>
+
+  <!-- Company Profile Sidebar Overlay -->
+  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+
+  <!-- Company Profile Sidebar -->
+  <aside class="sidebar" id="profileSidebar" role="complementary" aria-label="Company profile">
+    <div class="sidebar-header">
+      <span class="sidebar-title">Company Profile</span>
+      <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&#10005;</button>
+    </div>
+    <div class="sidebar-body" id="sidebarBody">
+      <div class="sidebar-loading">
+        <div class="spinner" role="status" aria-label="Loading"></div>
+        <div style="margin-top: 8px;">Loading profile...</div>
+      </div>
+    </div>
+  </aside>
+
+  <script>
+    'use strict'
+
+    // ── Constants ──────────────────────────────────────────────
+    const PAGE_SIZE = 20
+    const DEBOUNCE_MS = 300
+    const API_BASE = ''  // same-origin; override for dev: 'http://localhost:8000'
+
+    // ── State ──────────────────────────────────────────────────
+    const state = {
+      query: '',
+      industry: '',
+      city: '',
+      sort: '',
+      page: 1,
+      total: 0,
+    }
+
+    // ── DOM refs — Factories ───────────────────────────────────
+    const searchInput        = document.getElementById('searchInput')
+    const industrySelect     = document.getElementById('industrySelect')
+    const citySelect         = document.getElementById('citySelect')
+    const sortSelect         = document.getElementById('sortSelect')
+    const searchBtn          = document.getElementById('searchBtn')
+    const exportBtn          = document.getElementById('exportBtn')
+    const statsText          = document.getElementById('statsText')
+    const resultsCount       = document.getElementById('resultsCount')
+    const resultsBody        = document.getElementById('resultsBody')
+    const stateLoading       = document.getElementById('stateLoading')
+    const stateEmpty         = document.getElementById('stateEmpty')
+    const paginationInfo     = document.getElementById('paginationInfo')
+    const prevBtn            = document.getElementById('prevBtn')
+    const nextBtn            = document.getElementById('nextBtn')
+    const errorBanner        = document.getElementById('errorBanner')
+
+    // ── DOM refs — Sidebar ────────────────────────────────────
+    const sidebarOverlay     = document.getElementById('sidebarOverlay')
+    const profileSidebar     = document.getElementById('profileSidebar')
+    const sidebarClose       = document.getElementById('sidebarClose')
+    const sidebarBody        = document.getElementById('sidebarBody')
+
+    // ── Utility ────────────────────────────────────────────────
+    function debounce(fn, ms) {
+      let timer
+      return (...args) => {
+        clearTimeout(timer)
+        timer = setTimeout(() => fn(...args), ms)
+      }
+    }
+
+    function buildParams(extra = {}) {
+      const p = new URLSearchParams()
+      if (state.query)    p.set('q',        state.query)
+      if (state.industry) p.set('industry', state.industry)
+      if (state.city)     p.set('city',     state.city)
+      if (state.sort)     p.set('sort',     state.sort)
+      Object.entries(extra).forEach(([k, v]) => p.set(k, v))
+      return p
+    }
+
+    function formatCapital(amount) {
+      if (!amount) return '—'
+      if (amount >= 1e9) return `NT$ ${(amount / 1e9).toFixed(1)}B`
+      if (amount >= 1e6) return `NT$ ${(amount / 1e6).toFixed(0)}M`
+      if (amount >= 1e3) return `NT$ ${(amount / 1e3).toFixed(0)}K`
+      return `NT$ ${amount}`
+    }
+
+    function showError(msg) {
+      errorBanner.textContent = msg
+      errorBanner.classList.add('visible')
+    }
+
+    function clearError() {
+      errorBanner.classList.remove('visible')
+    }
+
+    function setLoading(on) {
+      stateLoading.style.display   = on ? 'block' : 'none'
+      stateEmpty.style.display     = 'none'
+      resultsBody.style.display    = on ? 'none' : ''
+      searchBtn.disabled           = on
+    }
+
+    function formatDate(raw) {
+      if (!raw) return '—'
+      try {
+        return new Date(raw).toLocaleDateString('en-CA')  // YYYY-MM-DD
+      } catch {
+        return raw
+      }
+    }
+
+    function certBadges(certsStr) {
+      if (!certsStr) return '<span style="color:var(--text-secondary);font-size:11px;">—</span>'
+      const isTypical = certsStr.startsWith('Typical: ')
+      const certList = isTypical ? certsStr.slice('Typical: '.length) : certsStr
+      const certs = certList.split(',').map(s => s.trim()).filter(Boolean)
+      if (certs.length === 0) return '<span style="color:var(--text-secondary);font-size:11px;">—</span>'
+
+      if (isTypical) {
+        const badges = certs.map(cert =>
+          `<span class="cert-badge cert-badge-typical">${escapeHtml(cert)}</span>`
+        ).join('')
+        return `<div class="cert-list"><span style="font-size:10px;color:#9aa0a6;display:block;margin-bottom:2px;">&#9888; Industry standards (not verified)</span>${badges}</div>`
+      }
+
+      const badges = certs.map(cert =>
+        `<span class="cert-badge cert-badge-confirmed">${escapeHtml(cert)}</span>`
+      ).join('')
+      return `<div class="cert-list">${badges}</div>`
+    }
+
+    function escapeHtml(str) {
+      if (str == null) return ''
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+    }
+
+    // ── URL Sync ───────────────────────────────────────────────
+    function syncStateToUrl() {
+      const p = new URLSearchParams()
+      if (state.query)    p.set('q',        state.query)
+      if (state.industry) p.set('industry', state.industry)
+      if (state.city)     p.set('city',     state.city)
+      if (state.sort)     p.set('sort',     state.sort)
+      if (state.page > 1) p.set('page',     state.page)
+      const qs = p.toString()
+      history.replaceState(null, '', qs ? `?${qs}` : location.pathname)
+    }
+
+    function loadStateFromUrl() {
+      const p = new URLSearchParams(location.search)
+      state.query    = p.get('q')        || ''
+      state.industry = p.get('industry') || ''
+      state.city     = p.get('city')     || ''
+      state.sort     = p.get('sort')     || ''
+      state.page     = parseInt(p.get('page') || '1', 10)
+    }
+
+    // ── API Calls ──────────────────────────────────────────────
+    async function fetchJson(url) {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
+      return res.json()
+    }
+
+    async function loadFilters() {
+      try {
+        const data = await fetchJson(`${API_BASE}/api/filters`)
+
+        // ISSUE-001: handle both string[] and {value, count}[] from /api/filters
+        const industries = data.industries || []
+        industries.forEach(ind => {
+          const val = typeof ind === 'string' ? ind : (ind && ind.value)
+          if (!val) return
+          const cnt = (typeof ind === 'object' && ind.count != null) ? ind.count : null
+          const opt = document.createElement('option')
+          opt.value = val
+          opt.textContent = cnt != null ? `${val} (${cnt.toLocaleString()})` : val
+          industrySelect.appendChild(opt)
+        })
+
+        const cities = data.cities || []
+        cities.forEach(city => {
+          const val = typeof city === 'string' ? city : (city && city.value)
+          if (!val) return
+          const cnt = (typeof city === 'object' && city.count != null) ? city.count : null
+          const opt = document.createElement('option')
+          opt.value = val
+          opt.textContent = cnt != null ? `${val} (${cnt.toLocaleString()})` : val
+          citySelect.appendChild(opt)
+        })
+
+        if (state.industry) industrySelect.value = state.industry
+        if (state.city)     citySelect.value     = state.city
+        if (state.sort)     sortSelect.value     = state.sort
+
+      } catch (err) {
+        console.warn('Failed to load filters:', err.message)
+      }
+    }
+
+    async function loadStats() {
+      try {
+        const data = await fetchJson(`${API_BASE}/api/stats`)
+        const total      = (data.total_factories ?? data.total ?? '—').toLocaleString()
+        const industries = data.industries_count ?? data.industries ?? '—'
+        const cities     = data.cities_count ?? data.cities ?? '—'
+        const updated    = data.last_updated ? formatDate(data.last_updated) : '—'
+        statsText.innerHTML =
+          `<strong>${total}</strong> factories
+           <span class="stat-dot"></span>
+           <strong>${industries}</strong> industries
+           <span class="stat-dot"></span>
+           <strong>${cities}</strong> cities
+           <span class="stat-dot"></span>
+           Last updated: <strong>${escapeHtml(updated)}</strong>`
+      } catch (err) {
+        statsText.textContent = 'Statistics unavailable'
+        console.warn('Failed to load stats:', err.message)
+      }
+    }
+
+    async function search() {
+      clearError()
+      setLoading(true)
+      syncStateToUrl()
+
+      const params = buildParams({ page: state.page, page_size: PAGE_SIZE })
+
+      try {
+        const data = await fetchJson(`${API_BASE}/api/search?${params}`)
+        const results = data.results || data.items || []
+        state.total = data.total || 0
+
+        renderResults(results)
+        renderPagination()
+      } catch (err) {
+        showError(`Search failed: ${err.message}`)
+        renderResults([])
+        renderPagination()
+      } finally {
+        setLoading(false)
+      }
+    }
+
+    // ── Render — Factories ─────────────────────────────────────
+    function renderResults(rows) {
+      if (rows.length === 0) {
+        resultsBody.innerHTML = ''
+        resultsBody.style.display = 'none'
+        stateEmpty.style.display = 'block'
+        resultsCount.textContent = ''
+        return
+      }
+
+      stateEmpty.style.display  = 'none'
+      resultsBody.style.display = ''
+
+      const from = (state.page - 1) * PAGE_SIZE + 1
+      const to   = Math.min(from + rows.length - 1, state.total)
+      resultsCount.textContent = `Showing ${from.toLocaleString()}–${to.toLocaleString()} of ${state.total.toLocaleString()} results`
+
+      resultsBody.innerHTML = rows.map(row => {
+        const nameEn = escapeHtml(row.name_en || row.company_name_en || row.name || '')
+        const nameZhRaw = row.name_zh || row.company_name_zh || ''
+        const nameZh = escapeHtml(nameZhRaw)
+        const industry = escapeHtml(row.industry_en || row.industry || row.industry_category || '—')
+        const city     = escapeHtml(
+          [row.city_en, row.district_en].filter(Boolean).join(' / ') ||
+          row.city || row.district || row.location || '—'
+        )
+        const taxId    = escapeHtml(row.tax_id || row.unified_number || '—')
+        const regDate  = formatDate(row.registration_date || row.reg_date)
+        const capital  = formatCapital(row.capital_amount)
+        const productsRaw = row.products_en || ''
+        const products = productsRaw.length > 50
+          ? escapeHtml(productsRaw.slice(0, 50)) + '...'
+          : escapeHtml(productsRaw) || '—'
+        const rawTaxId = row.tax_id || row.unified_number || ''
+
+        const displayNameEn = row.official_name_en ? escapeHtml(row.official_name_en) : (nameEn || '—')
+
+        const listedBadge = row.is_listed
+          ? `<span style="font-size:10px;font-weight:600;background:#e8f0fe;color:#1a73e8;border:1px solid #c5d5f8;border-radius:4px;padding:1px 5px;vertical-align:middle;margin-left:4px;">&#128200; ${row.stock_id ? row.stock_id : 'Listed'}</span>`
+          : ''
+
+        const rowId = `contact-${row.id || rawTaxId}`
+
+        const profileBtn = rawTaxId
+          ? ` <button class="company-link" style="font-size:11px;color:var(--text-secondary);font-weight:400;" onclick="openProfile('${escapeHtml(rawTaxId)}', '${displayNameEn.replace(/'/g, "\\'")}')">&#x2139; Profile</button>`
+          : ''
+        const addressZhRaw = row.address_zh || ''
+        const registeredAddr = row.registered_address || ''
+        const mapsUrl = addressZhRaw
+          ? `https://www.google.com/maps/search/${encodeURIComponent(addressZhRaw)}`
+          : null
+
+        const contactBtn = `<button class="btn-contact" onclick="toggleContact('${rowId}')">Contact Info</button>`
+
+        const contactPanelItems = []
+        if (addressZhRaw) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128205;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Factory Address</span>
+                <span class="contact-item-value">${escapeHtml(addressZhRaw)}</span>
+              </div>
+            </div>`)
+        }
+        if (registeredAddr) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#127970;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Registered Address</span>
+                <span class="contact-item-value">${escapeHtml(registeredAddr)}</span>
+              </div>
+            </div>`)
+        }
+        if (row.phone) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128222;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Phone</span>
+                <span class="contact-item-value">${escapeHtml(row.phone)}</span>
+              </div>
+            </div>`)
+        }
+        if (row.email) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128231;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Email</span>
+                <a href="mailto:${escapeHtml(row.email)}" class="company-link">${escapeHtml(row.email)}</a>
+              </div>
+            </div>`)
+        }
+        if (row.website) {
+          const websiteHref = row.website.startsWith('http') ? row.website : `https://${row.website}`
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#127760;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Website</span>
+                <a href="${escapeHtml(websiteHref)}" target="_blank" rel="noopener noreferrer" class="company-link">${escapeHtml(row.website)}</a>
+              </div>
+            </div>`)
+        }
+        if (row.fax) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128224;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Fax</span>
+                <span class="contact-item-value">${escapeHtml(row.fax)}</span>
+              </div>
+            </div>`)
+        }
+        {
+          const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(nameZhRaw + ' 電話 聯絡')}`
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128269;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Search Company</span>
+                <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer">Search on Google &rarr;</a>
+              </div>
+            </div>`)
+        }
+        if (mapsUrl) {
+          contactPanelItems.push(`
+            <div class="contact-item">
+              <span class="contact-item-icon">&#128205;</span>
+              <div class="contact-item-body">
+                <span class="contact-item-label">Google Maps</span>
+                <a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">Open in Maps &rarr;</a>
+              </div>
+            </div>`)
+        }
+
+        const contactRow = contactPanelItems.length > 0
+          ? `<tr id="${rowId}" class="contact-row">
+              <td colspan="8">
+                <div class="contact-panel">${contactPanelItems.join('')}</div>
+              </td>
+            </tr>`
+          : ''
+
+        // ISSUE-006: company name click expands Contact Info; fall back to plain text if no contact info
+        const nameInner = contactPanelItems.length > 0
+          ? `<button class="company-name-en company-link" onclick="toggleContact('${rowId}')" style="background:none;border:none;padding:0;font-size:inherit;font-family:inherit;">${displayNameEn}</button>${listedBadge}`
+          : `<span class="company-name-en">${displayNameEn}</span>${listedBadge}`
+
+        // ISSUE-004: show phone and website inline under company name
+        const phoneInline = row.phone
+          ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">&#128222; ${escapeHtml(row.phone)}</div>`
+          : ''
+        const websiteRaw = row.website || ''
+        const websiteInline = websiteRaw
+          ? `<div style="font-size:11px;margin-top:1px;"><a href="${escapeHtml(websiteRaw.startsWith('http') ? websiteRaw : 'https://' + websiteRaw)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:none;">&#127760; ${escapeHtml(websiteRaw)}</a></div>`
+          : ''
+
+        return `<tr>
+          <td>
+            <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
+              ${nameInner}
+              ${profileBtn}
+              ${contactPanelItems.length > 0 ? contactBtn : ''}
+            </div>
+            ${nameZh ? `<div class="company-name-zh">${nameZh}</div>` : ''}
+            ${phoneInline}
+            ${websiteInline}
+          </td>
+          <td>${industry}</td>
+          <td title="${escapeHtml(productsRaw)}">${products}</td>
+          <td>${city}</td>
+          <td>${taxId}</td>
+          <td>${regDate}</td>
+          <td>${capital}</td>
+        </tr>${contactRow}`
+      }).join('')
+    }
+
+    function toggleContact(rowId) {
+      const row = document.getElementById(rowId)
+      if (row) row.classList.toggle('open')
+    }
+
+    function renderPagination() {
+      const totalPages = Math.max(1, Math.ceil(state.total / PAGE_SIZE))
+      paginationInfo.textContent = state.total > 0
+        ? `Page ${state.page} of ${totalPages.toLocaleString()} · ${state.total.toLocaleString()} total`
+        : ''
+
+      prevBtn.disabled = state.page <= 1
+      nextBtn.disabled = state.page >= totalPages
+    }
+
+    // ── Export ─────────────────────────────────────────────────
+    function triggerExport() {
+      const params = buildParams()
+      const url = `${API_BASE}/api/export?${params}`
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'tmdb-export.csv'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+    }
+
+    // ── Company Profile Sidebar ────────────────────────────────
+    function openSidebar() {
+      sidebarOverlay.classList.add('visible')
+      profileSidebar.classList.add('open')
+      document.body.style.overflow = 'hidden'
+    }
+
+    function closeSidebar() {
+      sidebarOverlay.classList.remove('visible')
+      profileSidebar.classList.remove('open')
+      document.body.style.overflow = ''
+    }
+
+    async function openProfile(taxId, companyName) {
+      openSidebar()
+      sidebarBody.innerHTML = `
+        <div class="sidebar-loading">
+          <div class="spinner" role="status" aria-label="Loading"></div>
+          <div style="margin-top:8px;">Loading profile...</div>
+        </div>`
+
+      try {
+        const data = await fetchJson(`${API_BASE}/api/company/${encodeURIComponent(taxId)}`)
+        renderProfile(data, companyName)
+      } catch (err) {
+        sidebarBody.innerHTML = `
+          <div class="state-center">
+            <div class="empty-icon">&#9888;</div>
+            <div>Failed to load profile.<br><small>${escapeHtml(err.message)}</small></div>
+          </div>`
+      }
+    }
+
+    function renderAwardBadges(govRecords) {
+      const records = Array.isArray(govRecords) ? govRecords : []
+      if (records.length === 0) {
+        return '<span class="profile-empty-note">No government records found.</span>'
+      }
+      return `<div class="award-badges-wrap">${records.map(rec => {
+        const name    = escapeHtml(rec.program_name_en || rec.program_name || '—')
+        const agency  = escapeHtml(rec.issuing_agency || rec.agency || '')
+        const year    = rec.year ? escapeHtml(String(rec.year)) : null
+        return `<div class="award-badge">
+          <span class="award-badge-name">${name}</span>
+          ${agency ? `<span class="award-badge-agency">${agency}</span>` : ''}
+          ${year   ? `<span class="award-badge-year">${year}</span>` : ''}
+        </div>`
+      }).join('')}</div>`
+    }
+
+    function renderSupplyChain(supplyChain) {
+      const records = Array.isArray(supplyChain) ? supplyChain : []
+      if (records.length === 0) {
+        return '<span class="profile-empty-note">No supply chain data available.</span>'
+      }
+
+      // Separate into supplier vs buyer relationships
+      // record fields: buyer_name, supplier_name, source_year, purchase_ratio, direction
+      const asSupplier = records.filter(r => r.direction === 'supplier' || r.buyer_name)
+      const asBuyer    = records.filter(r => r.direction === 'buyer'    || r.supplier_name)
+
+      let html = ''
+
+      if (asSupplier.length > 0) {
+        html += `<div class="sc-section-group">
+          <div class="sc-section-group-label">As Supplier to</div>
+          <ul class="sc-section-list">`
+        asSupplier.forEach(r => {
+          const name = escapeHtml(r.buyer_name || r.buyer || '—')
+          const year = r.source_year ? escapeHtml(String(r.source_year)) : null
+          const ratio = r.purchase_ratio != null
+            ? `${Math.round(r.purchase_ratio * 100)}% share`
+            : null
+          const meta = [year, ratio].filter(Boolean).join(' · ')
+          html += `<li class="sc-section-item">
+            <span class="sc-section-item-name">${name}</span>
+            ${meta ? `<span class="sc-section-item-meta">${meta}</span>` : ''}
+          </li>`
+        })
+        html += '</ul></div>'
+      }
+
+      if (asBuyer.length > 0) {
+        html += `<div class="sc-section-group">
+          <div class="sc-section-group-label">As Buyer from</div>
+          <ul class="sc-section-list">`
+        asBuyer.forEach(r => {
+          const name = escapeHtml(r.supplier_name || r.name_zh || r.supplier || '—')
+          const year = r.source_year ? escapeHtml(String(r.source_year)) : null
+          const ratio = r.purchase_ratio != null
+            ? `${Math.round(r.purchase_ratio * 100)}% of purchases`
+            : null
+          const meta = [year, ratio].filter(Boolean).join(' · ')
+          html += `<li class="sc-section-item">
+            <span class="sc-section-item-name">${name}</span>
+            ${meta ? `<span class="sc-section-item-meta">${meta}</span>` : ''}
+          </li>`
+        })
+        html += '</ul></div>'
+      }
+
+      if (!html) {
+        return '<span class="profile-empty-note">No supply chain data available.</span>'
+      }
+
+      return html
+    }
+
+    function renderPatents(patents) {
+      const records = Array.isArray(patents) ? patents : []
+      if (records.length === 0) {
+        return '<span class="profile-empty-note">No patent records found.</span>'
+      }
+
+      const total = records.length
+      const shown = records.slice(0, 5)
+
+      let html = `<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;">${total} patent${total !== 1 ? 's' : ''} filed</div>`
+      html += '<ul class="patent-section-list">'
+      shown.forEach(p => {
+        const title = escapeHtml(p.title || p.patent_title || p.title_en || p.title_zh || '—')
+        const ipc   = escapeHtml(p.ipc || p.ipc_code || '')
+        html += `<li class="patent-item">
+          <div class="patent-item-title">${title}</div>
+          ${ipc ? `<div class="patent-item-ipc">${ipc}</div>` : ''}
+        </li>`
+      })
+      html += '</ul>'
+
+      if (total > 5) {
+        html += `<div class="patent-more">and ${total - 5} more...</div>`
+      }
+
+      return html
+    }
+
+    function renderProfile(data, fallbackName) {
+      // API returns { factory: {...}, supply_chain: [...], patents: [...], government_records: [...] }
+      const f = data.factory || data
+      const nameEn   = escapeHtml(f.name_en || fallbackName || '—')
+      const nameZh   = escapeHtml(f.name_zh || '')
+      const taxId    = escapeHtml(f.tax_id || '—')
+      const stockId  = f.stock_id || null
+      const isListed = f.is_listed || 0
+      const industry = escapeHtml(f.industry_en || '—')
+      const city     = escapeHtml(
+        [f.city_en, f.district_en].filter(Boolean).join(', ') || '—'
+      )
+      const address   = escapeHtml(f.address_zh || f.address || '—')
+      const capital   = formatCapital(f.capital_amount)
+      const regDate   = formatDate(f.registration_date)
+      const employees = f.employees != null ? f.employees.toLocaleString() : '—'
+      const phone     = f.phone || null
+      const email     = f.email || null
+      const website   = f.website || f.findbiz_url || null
+      const fax       = f.fax || null
+      const products  = escapeHtml(f.products_en || '—')
+      const certs     = certBadges(f.certifications_en || '')
+      const awardBadges = renderAwardBadges(data.government_records)
+      const supplyChainHtml = renderSupplyChain(data.supply_chain)
+      const patentsHtml = renderPatents(data.patents)
+
+      const listedBadge = isListed
+        ? `<span style="font-size:11px;font-weight:600;background:#e8f0fe;color:#1a73e8;border:1px solid #c5d5f8;border-radius:4px;padding:2px 6px;margin-left:6px;">&#128200; ${stockId ? escapeHtml(stockId) : 'Listed'}</span>`
+        : ''
+
+      sidebarBody.innerHTML = `
+        <div class="profile-name-en">${nameEn}${listedBadge}</div>
+        ${nameZh ? `<div class="profile-name-zh">${nameZh}</div>` : ''}
+
+        <div class="profile-section">
+          <div class="profile-section-title">Basic Information</div>
+          <div class="profile-field">
+            <span class="profile-field-label">Tax ID</span>
+            <span class="profile-field-value">${taxId}</span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-field-label">Industry</span>
+            <span class="profile-field-value">${industry}</span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-field-label">City</span>
+            <span class="profile-field-value">${city}</span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-field-label">Address</span>
+            <span class="profile-field-value">${address}</span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-field-label">Registered</span>
+            <span class="profile-field-value">${regDate}</span>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Business Details</div>
+          <div class="profile-field">
+            <span class="profile-field-label">Capital</span>
+            <span class="profile-field-value">${capital}</span>
+          </div>
+          <div class="profile-field">
+            <span class="profile-field-label">Employees</span>
+            <span class="profile-field-value">${employees}</span>
+          </div>
+          ${phone ? `<div class="profile-field">
+            <span class="profile-field-label">Phone</span>
+            <span class="profile-field-value">${escapeHtml(phone)}</span>
+          </div>` : ''}
+          ${email ? `<div class="profile-field">
+            <span class="profile-field-label">Email</span>
+            <span class="profile-field-value">
+              <a href="mailto:${escapeHtml(email)}" class="company-link" style="font-size:13px;">${escapeHtml(email)}</a>
+            </span>
+          </div>` : ''}
+          ${website ? `<div class="profile-field">
+            <span class="profile-field-label">Website</span>
+            <span class="profile-field-value">
+              <a href="${escapeHtml(website.startsWith('http') ? website : 'https://' + website)}" target="_blank" rel="noopener noreferrer" class="company-link" style="font-size:13px;">${escapeHtml(website)}</a>
+            </span>
+          </div>` : ''}
+          ${fax ? `<div class="profile-field">
+            <span class="profile-field-label">Fax</span>
+            <span class="profile-field-value">${escapeHtml(fax)}</span>
+          </div>` : ''}
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Products &amp; Certifications</div>
+          <div class="profile-field">
+            <span class="profile-field-label">Products</span>
+            <span class="profile-field-value">${products}</span>
+          </div>
+          <div class="profile-field" style="align-items:flex-start;">
+            <span class="profile-field-label" style="padding-top:2px;">Certifications</span>
+            <span class="profile-field-value">${certs}</span>
+          </div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Awards &amp; Government Records</div>
+          <div style="padding-top:4px;">${awardBadges}</div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Supply Chain Relationships</div>
+          <div style="padding-top:4px;">${supplyChainHtml}</div>
+        </div>
+
+        <div class="profile-section">
+          <div class="profile-section-title">Patents (Recent 3 Years)</div>
+          <div style="padding-top:4px;">${patentsHtml}</div>
+        </div>`
+    }
+
+    // ── Suggest Dropdown ────────────────────────────────────────
+    const suggestDropdown = document.getElementById('suggestDropdown')
+    let suggestActiveIndex = -1
+    let suggestItems = []
+
+    function closeSuggest() {
+      suggestDropdown.style.display = 'none'
+      suggestActiveIndex = -1
+      suggestItems = []
+    }
+
+    function renderSuggestions(suggestions) {
+      if (!suggestions.length) {
+        closeSuggest()
+        return
+      }
+      suggestActiveIndex = -1
+      suggestItems = suggestions
+      suggestDropdown.innerHTML = suggestions.map((s, i) => {
+        const countStr = s.count > 1000
+          ? (s.count / 1000).toFixed(1) + 'k'
+          : String(s.count)
+        return `<div class="suggest-item" data-index="${i}" role="option">` +
+          `<span>&#128269; ${escHtml(s.text)}</span>` +
+          `<span class="suggest-type">${escHtml(s.type)}</span>` +
+          `<span class="suggest-count">${countStr}</span>` +
+          `</div>`
+      }).join('')
+      suggestDropdown.style.display = 'block'
+
+      suggestDropdown.querySelectorAll('.suggest-item').forEach(el => {
+        el.addEventListener('mousedown', e => {
+          e.preventDefault()
+          const idx = parseInt(el.dataset.index, 10)
+          applySuggestion(idx)
+        })
+      })
+    }
+
+    function highlightSuggest(idx) {
+      suggestDropdown.querySelectorAll('.suggest-item').forEach((el, i) => {
+        el.classList.toggle('active', i === idx)
+      })
+    }
+
+    function applySuggestion(idx) {
+      if (idx < 0 || idx >= suggestItems.length) return
+      const s = suggestItems[idx]
+      searchInput.value = s.text
+      closeSuggest()
+      state.query = s.text
+      state.page  = 1
+      search()
+    }
+
+    function escHtml(str) {
+      return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
+    }
+
+    const debouncedSuggest = debounce(async () => {
+      const q = searchInput.value.trim()
+      if (q.length < 2) {
+        closeSuggest()
+        return
+      }
+      try {
+        const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(q)}&limit=8`)
+        if (!res.ok) { closeSuggest(); return }
+        const data = await res.json()
+        renderSuggestions(data.suggestions || [])
+      } catch {
+        closeSuggest()
+      }
+    }, 200)
+
+    document.addEventListener('click', e => {
+      if (!suggestDropdown.contains(e.target) && e.target !== searchInput) {
+        closeSuggest()
+      }
+    })
+
+    // ── Event Handlers — Factories ─────────────────────────────
+    const debouncedSearch = debounce(() => {
+      state.query = searchInput.value.trim()
+      state.page  = 1
+      search()
+    }, DEBOUNCE_MS)
+
+    searchInput.addEventListener('input', () => {
+      debouncedSearch()
+      debouncedSuggest()
+    })
+
+    searchInput.addEventListener('keydown', e => {
+      if (suggestDropdown.style.display !== 'none' && suggestItems.length) {
+        if (e.key === 'ArrowDown') {
+          e.preventDefault()
+          suggestActiveIndex = Math.min(suggestActiveIndex + 1, suggestItems.length - 1)
+          highlightSuggest(suggestActiveIndex)
+          return
+        }
+        if (e.key === 'ArrowUp') {
+          e.preventDefault()
+          suggestActiveIndex = Math.max(suggestActiveIndex - 1, -1)
+          highlightSuggest(suggestActiveIndex)
+          return
+        }
+        if (e.key === 'Enter' && suggestActiveIndex >= 0) {
+          e.preventDefault()
+          applySuggestion(suggestActiveIndex)
+          return
+        }
+        if (e.key === 'Escape') {
+          closeSuggest()
+          return
+        }
+      }
+      if (e.key === 'Enter') {
+        closeSuggest()
+        state.query = searchInput.value.trim()
+        state.page  = 1
+        search()
+      }
+    })
+
+    searchInput.addEventListener('blur', () => {
+      setTimeout(closeSuggest, 150)
+    })
+
+    searchBtn.addEventListener('click', () => {
+      closeSuggest()
+      state.query = searchInput.value.trim()
+      state.page  = 1
+      search()
+    })
+
+    const INDUSTRY_COMMON_CERTS = {
+      'Electronic Components Manufacturing': 'ISO 9001, ISO 14001, IECQ QC 080000',
+      'Semiconductor Manufacturing': 'ISO 9001, ISO 14001, IECQ QC 080000',
+      'Computer, Electronic & Optical Products Manufacturing': 'ISO 9001, ISO 14001, ISO 27001',
+      'Machinery & Equipment Manufacturing': 'ISO 9001, ISO 14001',
+      'Metal Products Manufacturing': 'ISO 9001, ISO 14001',
+      'Motor Vehicles & Parts Manufacturing': 'ISO 9001, IATF 16949',
+      'Other Transport Equipment Manufacturing': 'ISO 9001, AS9100 (aerospace), IATF 16949 (auto)',
+      'Electrical Equipment Manufacturing': 'ISO 9001, ISO 14001',
+      'Plastics Products Manufacturing': 'ISO 9001, ISO 14001',
+      'Food Manufacturing': 'ISO 22000, HACCP, FSSC 22000',
+      'Pharmaceuticals': 'GMP, ISO 13485, ISO 9001',
+      'Medical Devices & Supplies': 'ISO 13485, ISO 9001',
+      'Chemical Materials Manufacturing': 'ISO 9001, ISO 14001, RC 14001',
+      'Textile Manufacturing': 'ISO 9001, Oeko-Tex',
+    }
+    const industryCertsEl = document.getElementById('industryCerts')
+    const industryCertsText = document.getElementById('industryCertsText')
+
+    industrySelect.addEventListener('change', () => {
+      state.industry = industrySelect.value
+      state.page     = 1
+
+      const certs = INDUSTRY_COMMON_CERTS[state.industry]
+      if (certs) {
+        industryCertsText.textContent = certs
+        industryCertsEl.style.display = 'block'
+      } else {
+        industryCertsEl.style.display = 'none'
+      }
+
+      search()
+    })
+
+    citySelect.addEventListener('change', () => {
+      state.city = citySelect.value
+      state.page  = 1
+      search()
+    })
+
+    sortSelect.addEventListener('change', () => {
+      state.sort = sortSelect.value
+      state.page = 1
+      search()
+    })
+
+    exportBtn.addEventListener('click', triggerExport)
+
+    prevBtn.addEventListener('click', () => {
+      if (state.page > 1) {
+        state.page--
+        search()
+      }
+    })
+
+    nextBtn.addEventListener('click', () => {
+      const totalPages = Math.ceil(state.total / PAGE_SIZE)
+      if (state.page < totalPages) {
+        state.page++
+        search()
+      }
+    })
+
+    // ── Event Handlers — Sidebar ───────────────────────────────
+    sidebarClose.addEventListener('click', closeSidebar)
+    sidebarOverlay.addEventListener('click', closeSidebar)
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && profileSidebar.classList.contains('open')) {
+        closeSidebar()
+      }
+    })
+
+    // ── Init ───────────────────────────────────────────────────
+    async function init() {
+      loadStateFromUrl()
+
+      searchInput.value = state.query
+
+      await Promise.all([
+        loadFilters(),
+        loadStats(),
+      ])
+
+      await search()
+    }
+
+    init()
+
+    // ── Tab System ──────────────────────────────────────────────
+    function activateTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.tab === tabId)
+      })
+      document.querySelectorAll('.tab-panel').forEach(panel => {
+        panel.classList.toggle('active', panel.id === 'panel-' + tabId)
+      })
+    }
+
+    document.querySelectorAll('.tab-btn').forEach(btn => {
+      btn.addEventListener('click', () => activateTab(btn.dataset.tab))
+    })
+
+    // ── Supply Chain Search ─────────────────────────────────────
+    const scCompanyInput = document.getElementById('scCompanyInput')
+    const scSearchBtn = document.getElementById('scSearchBtn')
+    const scResultsBody = document.getElementById('scResultsBody')
+    const scResultsCount = document.getElementById('scResultsCount')
+
+    function scSetState(loading, empty, init) {
+      document.getElementById('scStateLoading').style.display = loading ? '' : 'none'
+      document.getElementById('scStateEmpty').style.display = empty ? '' : 'none'
+      document.getElementById('scStateInit').style.display = init ? '' : 'none'
+      scResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
+    }
+
+    async function searchSupplyChain() {
+      const company = scCompanyInput.value.trim()
+      if (!company) { scCompanyInput.focus(); return }
+      scSetState(true, false, false)
+      scResultsCount.textContent = ''
+      try {
+        const data = await fetchJson(API_BASE + '/api/supply-chain?buyer=' + encodeURIComponent(company))
+        const rows = data.suppliers || []
+        if (rows.length === 0) { scSetState(false, true, false); return }
+        scSetState(false, false, false)
+        const matchRate = data.match_rate != null ? ' (' + Math.round(data.match_rate * 100) + '% matched)' : ''
+        scResultsCount.textContent = rows.length + ' supplier' + (rows.length !== 1 ? 's' : '') + ' found' + matchRate
+        scResultsBody.innerHTML = rows.map(row => {
+          const supplier = escapeHtml(row.name_zh || '')
+          const category = escapeHtml(row.category || '')
+          const product = escapeHtml(row.product || '')
+          const factory = row.factory
+          const factoryInfo = factory
+            ? escapeHtml(factory.name_en || '') + ' <span style="color:#5f6368;font-size:12px;">(' + escapeHtml(factory.city_en || '') + ')</span>'
+            : '<span style="color:#9aa0a6;">Not in factory DB</span>'
+          return '<tr><td>' + supplier + '</td><td>' + category + '</td><td>' + product + '</td><td>' + factoryInfo + '</td></tr>'
+        }).join('')
+      } catch (err) {
+        scSetState(false, true, false)
+        scResultsCount.textContent = 'Error: ' + err.message
+      }
+    }
+
+    scSearchBtn.addEventListener('click', searchSupplyChain)
+    scCompanyInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchSupplyChain() })
+
+    // ── Patents Search ──────────────────────────────────────────
+    const patInput = document.getElementById('patInput')
+    const patSearchBtn = document.getElementById('patSearchBtn')
+    const patResultsBody = document.getElementById('patResultsBody')
+    const patResultsCount = document.getElementById('patResultsCount')
+
+    function patSetState(loading, empty, init) {
+      document.getElementById('patStateLoading').style.display = loading ? '' : 'none'
+      document.getElementById('patStateEmpty').style.display = empty ? '' : 'none'
+      document.getElementById('patStateInit').style.display = init ? '' : 'none'
+      patResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
+    }
+
+    async function searchPatents() {
+      const q = patInput.value.trim()
+      if (!q) { patInput.focus(); return }
+      patSetState(true, false, false)
+      patResultsCount.textContent = ''
+      try {
+        const data = await fetchJson(API_BASE + '/api/patents?applicant=' + encodeURIComponent(q))
+        const rows = data.results || []
+        if (rows.length === 0) { patSetState(false, true, false); return }
+        patSetState(false, false, false)
+        patResultsCount.textContent = data.total + ' patent' + (data.total !== 1 ? 's' : '') + ' found'
+        patResultsBody.innerHTML = rows.map(row => {
+          return '<tr><td>' + escapeHtml(row.patent_number || '') + '</td><td>' + escapeHtml(row.title_zh || '') + '</td><td>' + escapeHtml(row.applicant_name || '') + '</td><td>' + escapeHtml(row.tech_category || '') + '</td><td>' + escapeHtml(row.publication_date || '') + '</td></tr>'
+        }).join('')
+      } catch (err) {
+        patSetState(false, true, false)
+        patResultsCount.textContent = 'Error: ' + err.message
+      }
+    }
+
+    patSearchBtn.addEventListener('click', searchPatents)
+    patInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchPatents() })
+
+    // ── Government Records Search ───────────────────────────────
+    const govInput = document.getElementById('govInput')
+    const govSearchBtn = document.getElementById('govSearchBtn')
+    const govResultsBody = document.getElementById('govResultsBody')
+    const govResultsCount = document.getElementById('govResultsCount')
+
+    function govSetState(loading, empty, init) {
+      document.getElementById('govStateLoading').style.display = loading ? '' : 'none'
+      document.getElementById('govStateEmpty').style.display = empty ? '' : 'none'
+      document.getElementById('govStateInit').style.display = init ? '' : 'none'
+      govResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
+    }
+
+    async function searchGovRecords() {
+      const q = govInput.value.trim()
+      if (!q) { govInput.focus(); return }
+      govSetState(true, false, false)
+      govResultsCount.textContent = ''
+      try {
+        const data = await fetchJson(API_BASE + '/api/government-records?company=' + encodeURIComponent(q))
+        const rows = data.results || []
+        if (rows.length === 0) { govSetState(false, true, false); return }
+        govSetState(false, false, false)
+        govResultsCount.textContent = data.total + ' record' + (data.total !== 1 ? 's' : '') + ' found'
+        govResultsBody.innerHTML = rows.map(row => {
+          let details = ''
+          try { const d = JSON.parse(row.details || '{}'); details = d.details || '' } catch(e) { details = row.details || '' }
+          return '<tr><td>' + escapeHtml(row.company_name || '') + '</td><td>' + escapeHtml((row.program_name_en || row.program_name || '')) + '</td><td>' + escapeHtml(row.issuing_agency || '') + '</td><td>' + escapeHtml(details) + '</td></tr>'
+        }).join('')
+      } catch (err) {
+        govSetState(false, true, false)
+        govResultsCount.textContent = 'Error: ' + err.message
+      }
+    }
+
+    govSearchBtn.addEventListener('click', searchGovRecords)
+    govInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchGovRecords() })
+  </script>
+</body>
+</html>

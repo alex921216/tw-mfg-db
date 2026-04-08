@@ -1,0 +1,28 @@
+# tw-mfg-db 依賴
+# Python 3.10+
+
+# HTTP 請求（標準庫 urllib 已足夠，以下為選用加速套件）
+requests>=2.31.0
+
+# 資料處理
+# sqlite3 為 Python 標準庫，無需另外安裝
+
+# HTML 解析（MOPS 供應商爬蟲）
+beautifulsoup4>=4.12.0
+lxml>=5.1.0
+
+# PDF 解析（策略 C：年報 PDF 供應商提取）
+pdfplumber>=0.11.0
+
+# 中文拼音轉換（公司名稱 fallback 翻譯）
+pypinyin>=0.51.0
+
+# Web API
+fastapi>=0.110.0
+uvicorn[standard]>=0.29.0
+
+# LLM 翻譯
+openai>=1.0.0
+
+# 型別檢查輔助（開發用，非執行時依賴）
+# mypy>=1.0.0

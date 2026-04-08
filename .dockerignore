@@ -1,0 +1,32 @@
+# 虛擬環境
+.venv/
+**/__pycache__/
+**/*.pyc
+**/*.pyo
+**/*.pyd
+.Python
+
+# 資料管線腳本（部署時不需要）
+scripts/
+translations/
+
+# 大型原始資料檔（只打包 tmdb.db.gz）
+data/tmdb.db
+data/factories*.json
+data/moea_factories.csv
+data/government_records_raw.json
+data/patents_raw.json
+data/supply_chain_raw.json
+data/supply_chain_matched.json
+data/listed_companies.json
+data/annual_reports/
+data/factories.db
+
+# 開發工具
+.git/
+.gitignore
+*.log
+enrich.log
+
+# macOS
+.DS_Store
