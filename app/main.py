@@ -329,8 +329,12 @@ def init_db() -> None:
     conn.execute(
       """
       INSERT OR IGNORE INTO api_keys (key, name, tier, rate_limit_per_minute, rate_limit_per_day)
-      VALUES ('tmdb-demo-2026', 'Demo (Frontend)', 'free', 30, 1000)
+      VALUES ('tmdb-demo-2026', 'Demo (Frontend)', 'free', 200, 50000)
       """
+    )
+    # Update existing demo key rate limits (in case it was already created with old values)
+    conn.execute(
+      "UPDATE api_keys SET rate_limit_per_minute = 200, rate_limit_per_day = 50000 WHERE key = 'tmdb-demo-2026'"
     )
     conn.commit()
     # 更新 FTS5 統計資料，讓查詢規劃器在大資料量下做出最佳決策
