@@ -1595,8 +1595,8 @@
         document.getElementById('modalNameEn').textContent = nameEn
         document.getElementById('modalNameZh').textContent = nameZh
 
-        // Google search button — use Chinese name for best results
-        const googleQuery = (f0.name_zh || nameZh || nameEn) + ' 電話 聯絡方式'
+        // Google search button — just company name, no extra keywords
+        const googleQuery = f0.name_zh || nameZh || nameEn
         document.getElementById('modalGoogleBtn').href = `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`
 
         // ── Badges ────────────────────────────────────────────
@@ -1661,10 +1661,10 @@
         }
 
         // Always add Google search link at the end of contact
-        const googleContactUrl = `https://www.google.com/search?q=${encodeURIComponent((f0.name_zh || nameZh || nameEn) + ' 電話 地址 聯絡方式')}`
+        const googleContactUrl = `https://www.google.com/search?q=${encodeURIComponent(f0.name_zh || nameZh || nameEn)}`
         contactLines.push(
           `<div class="contact-line"><span class="contact-line-icon">&#128269;</span>` +
-          `<a href="${escapeHtml(googleContactUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">Search contact info on Google &rarr;</a></div>`
+          `<a href="${escapeHtml(googleContactUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">Search on Google &rarr;</a></div>`
         )
 
         document.getElementById('modalContactLines').innerHTML = contactLines.join('')
