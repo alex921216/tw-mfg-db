@@ -2231,18 +2231,5 @@ def serve_index():
     headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'},
   )
 
-@app.get('/company/{tax_id}')
-def serve_company_profile(tax_id: str):
-  return FileResponse(
-    STATIC_DIR / 'company.html',
-    headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'},
-  )
-
-@app.get('/supply-chain')
-def serve_supply_chain():
-  return FileResponse(
-    STATIC_DIR / 'supply-chain.html',
-    headers={'Cache-Control': 'no-cache'},
-  )
 
 app.mount('/static', StaticFiles(directory=str(STATIC_DIR)), name='static')

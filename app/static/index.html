@@ -449,6 +449,100 @@
       gap: 4px;
     }
 
+    /* ── Modal ── */
+    .modal-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      overflow-y: auto;
+      padding: 40px 20px;
+    }
+    .modal-overlay.active {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+    .modal-content {
+      background: white;
+      border-radius: 12px;
+      max-width: 640px;
+      width: 100%;
+      padding: 32px;
+      position: relative;
+      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      animation: modalFadeIn 0.2s ease;
+    }
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-16px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .modal-close {
+      position: absolute;
+      top: 12px; right: 16px;
+      background: none; border: none;
+      font-size: 24px; cursor: pointer;
+      color: #666;
+      line-height: 1;
+      transition: color 0.15s;
+    }
+    .modal-close:hover { color: var(--text); }
+    .modal-name-en {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+      padding-right: 32px;
+    }
+    .modal-name-zh {
+      font-size: 14px;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+    }
+    .modal-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+    .modal-section {
+      margin-top: 24px;
+      padding-top: 16px;
+      border-top: 1px solid #eee;
+    }
+    .modal-section h3 {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      margin-bottom: 12px;
+    }
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px;
+    }
+    .info-grid label {
+      font-size: 12px;
+      color: #999;
+      display: block;
+      margin-bottom: 2px;
+    }
+    .info-grid span, .info-grid a {
+      font-size: 14px;
+      word-break: break-word;
+    }
+    .info-grid a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .info-grid a:hover { text-decoration: underline; }
+    @media (max-width: 480px) {
+      .modal-overlay { padding: 0; }
+      .modal-content { border-radius: 0; min-height: 100vh; }
+      .info-grid { grid-template-columns: 1fr; }
+    }
+
     /* ── Award Badge (profile sidebar) ── */
     .award-badge {
       display: inline-flex;
@@ -500,92 +594,7 @@
       display: block;
     }
 
-    /* ── Company Profile Sidebar ── */
-    .sidebar-overlay {
-      display: none;
-      position: fixed;
-      inset: 0;
-      background: rgba(0,0,0,0.3);
-      z-index: 200;
-    }
-
-    .sidebar-overlay.visible {
-      display: block;
-    }
-
-    .sidebar {
-      position: fixed;
-      top: 0;
-      right: -480px;
-      width: 480px;
-      max-width: 100vw;
-      height: 100vh;
-      background: var(--surface);
-      border-left: 1px solid var(--border);
-      box-shadow: -4px 0 24px rgba(60,64,67,0.15);
-      z-index: 201;
-      display: flex;
-      flex-direction: column;
-      transition: right 0.25s ease;
-      overflow: hidden;
-    }
-
-    .sidebar.open {
-      right: 0;
-    }
-
-    .sidebar-header {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      padding: 16px 20px;
-      border-bottom: 1px solid var(--border);
-      background: #fafafa;
-      flex-shrink: 0;
-    }
-
-    .sidebar-title {
-      font-size: 15px;
-      font-weight: 600;
-      color: var(--text);
-    }
-
-    .sidebar-close {
-      width: 32px;
-      height: 32px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      border-radius: 6px;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      color: var(--text-secondary);
-      transition: background 0.15s;
-      font-size: 18px;
-      line-height: 1;
-    }
-
-    .sidebar-close:hover {
-      background: var(--row-hover);
-      color: var(--text);
-    }
-
-    .sidebar-body {
-      flex: 1;
-      overflow-y: auto;
-      padding: 20px;
-    }
-
-    .sidebar-loading {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      height: 200px;
-      color: var(--text-secondary);
-    }
-
+    /* ── Profile Fields (used in modal) ── */
     .profile-section {
       margin-bottom: 20px;
     }
@@ -599,115 +608,6 @@
       margin-bottom: 10px;
       padding-bottom: 6px;
       border-bottom: 1px solid var(--border);
-    }
-
-    .profile-field {
-      display: flex;
-      gap: 12px;
-      padding: 6px 0;
-    }
-
-    .profile-field-label {
-      font-size: 12px;
-      color: var(--text-secondary);
-      flex-shrink: 0;
-      width: 120px;
-    }
-
-    .profile-field-value {
-      font-size: 13px;
-      color: var(--text);
-      font-weight: 500;
-      flex: 1;
-      word-break: break-word;
-    }
-
-    .profile-name-en {
-      font-size: 18px;
-      font-weight: 600;
-      color: var(--text);
-      margin-bottom: 4px;
-    }
-
-    .profile-name-zh {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 16px;
-    }
-
-    /* ── Supply Chain sidebar section ── */
-    .sc-section-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .sc-section-group {
-      margin-bottom: 10px;
-    }
-
-    .sc-section-group-label {
-      font-size: 11px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 0.4px;
-      margin-bottom: 4px;
-    }
-
-    .sc-section-item {
-      font-size: 13px;
-      color: var(--text);
-      padding: 3px 0;
-      display: flex;
-      align-items: baseline;
-      gap: 6px;
-    }
-
-    .sc-section-item-name {
-      font-weight: 500;
-    }
-
-    .sc-section-item-meta {
-      font-size: 11px;
-      color: var(--text-secondary);
-    }
-
-    /* ── Patents sidebar section ── */
-    .patent-section-list {
-      list-style: none;
-      padding: 0;
-      margin: 0;
-    }
-
-    .patent-item {
-      padding: 6px 0;
-      border-bottom: 1px solid var(--border);
-    }
-
-    .patent-item:last-child {
-      border-bottom: none;
-    }
-
-    .patent-item-title {
-      font-size: 13px;
-      font-weight: 500;
-      color: var(--text);
-      line-height: 1.4;
-    }
-
-    .patent-item-ipc {
-      font-size: 11px;
-      color: var(--text-secondary);
-      font-family: monospace;
-      margin-top: 2px;
-    }
-
-    .patent-more {
-      font-size: 12px;
-      color: var(--text-secondary);
-      padding-top: 6px;
-      font-style: italic;
     }
 
     .profile-empty-note {
@@ -759,10 +659,6 @@
       .pagination {
         flex-direction: column;
         align-items: flex-start;
-      }
-
-      .sidebar {
-        width: 100vw;
       }
     }
 
@@ -898,36 +794,6 @@
       flex-shrink: 0;
     }
 
-    /* ── Tabs ── */
-    .tabs-nav {
-      display: flex;
-      gap: 4px;
-      padding: 0 16px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #dadce0;
-      overflow-x: auto;
-      margin-bottom: 16px;
-    }
-    .tab-btn {
-      padding: 10px 16px;
-      border: none;
-      background: none;
-      cursor: pointer;
-      font-size: 14px;
-      color: #5f6368;
-      border-bottom: 2px solid transparent;
-      white-space: nowrap;
-      transition: color 0.2s, border-color 0.2s;
-      font-family: inherit;
-    }
-    .tab-btn:hover { color: #1a73e8; }
-    .tab-btn.active {
-      color: #1a73e8;
-      border-bottom-color: #1a73e8;
-      font-weight: 500;
-    }
-    .tab-panel { display: none; }
-    .tab-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -951,24 +817,6 @@
       <span id="statsText">Loading statistics...</span>
     </div>
 
-    <!-- Tab Navigation -->
-    <div class="tabs-nav" role="tablist" aria-label="Search categories">
-      <button class="tab-btn active" role="tab" data-tab="factories" id="tab-factories">
-        🏭 Factories
-      </button>
-      <button class="tab-btn" role="tab" data-tab="supply-chain" id="tab-supply-chain" onclick="window.location.href='/supply-chain'">
-        🔗 Supply Chain
-      </button>
-      <button class="tab-btn" role="tab" data-tab="patents" id="tab-patents">
-        📄 Patents
-      </button>
-      <button class="tab-btn" role="tab" data-tab="gov-records" id="tab-gov-records">
-        🏛 Government Records
-      </button>
-    </div>
-
-    <!-- Factories Tab Panel -->
-    <div class="tab-panel active" id="panel-factories">
 
     <!-- Search Card -->
     <div class="search-card">
@@ -1075,97 +923,6 @@
       </div>
     </div>
 
-    </div><!-- end panel-factories -->
-
-    <!-- Supply Chain Tab Panel -->
-    <div class="tab-panel" id="panel-supply-chain">
-      <div class="search-card">
-        <div class="search-row">
-          <div class="search-field" style="flex: 2;">
-            <label for="scCompanyInput">Company Name</label>
-            <input type="text" id="scCompanyInput" placeholder="e.g. TSMC, 台積電, Foxconn, 鴻海">
-          </div>
-          <div class="search-actions">
-            <button class="btn btn-primary" id="scSearchBtn" type="button">🔍 Search</button>
-          </div>
-        </div>
-      </div>
-      <div class="results-card">
-        <div class="results-header">
-          <span id="scResultsCount"></span>
-        </div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr>
-              <th>Supplier</th><th>Category</th><th>Product</th><th>Factory Match</th>
-            </tr></thead>
-            <tbody id="scResultsBody"></tbody>
-          </table>
-        </div>
-        <div id="scStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
-        <div id="scStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No supply chain records found.</div>
-        <div id="scStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search for a company to view its supply chain. Try: TSMC, Foxconn, Delta</div>
-      </div>
-    </div><!-- end panel-supply-chain -->
-
-    <!-- Patents Tab Panel -->
-    <div class="tab-panel" id="panel-patents">
-      <div class="search-card">
-        <div class="search-row">
-          <div class="search-field" style="flex: 2;">
-            <label for="patInput">Applicant Name</label>
-            <input type="text" id="patInput" placeholder="e.g. 倍利科技, 映興電子, 視覺輔助">
-          </div>
-          <div class="search-actions">
-            <button class="btn btn-primary" id="patSearchBtn" type="button">🔍 Search</button>
-          </div>
-        </div>
-      </div>
-      <div class="results-card">
-        <div class="results-header"><span id="patResultsCount"></span></div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr>
-              <th>Patent Number</th><th>Title</th><th>Applicant</th><th>Tech Category</th><th>Date</th>
-            </tr></thead>
-            <tbody id="patResultsBody"></tbody>
-          </table>
-        </div>
-        <div id="patStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
-        <div id="patStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No patents found.</div>
-        <div id="patStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search patents by applicant name or keyword. Try: 倍利科技</div>
-      </div>
-    </div><!-- end panel-patents -->
-
-    <!-- Government Records Tab Panel -->
-    <div class="tab-panel" id="panel-gov-records">
-      <div class="search-card">
-        <div class="search-row">
-          <div class="search-field" style="flex: 2;">
-            <label for="govInput">Company Name</label>
-            <input type="text" id="govInput" placeholder="e.g. 三隆齒輪, 小巨人獎, 國家磐石獎">
-          </div>
-          <div class="search-actions">
-            <button class="btn btn-primary" id="govSearchBtn" type="button">🔍 Search</button>
-          </div>
-        </div>
-      </div>
-      <div class="results-card">
-        <div class="results-header"><span id="govResultsCount"></span></div>
-        <div class="table-wrapper">
-          <table>
-            <thead><tr>
-              <th>Company</th><th>Award/Program</th><th>Agency</th><th>Details</th>
-            </tr></thead>
-            <tbody id="govResultsBody"></tbody>
-          </table>
-        </div>
-        <div id="govStateLoading" style="display:none;text-align:center;padding:40px;">Loading...</div>
-        <div id="govStateEmpty" style="display:none;text-align:center;padding:40px;color:#5f6368;">No government records found.</div>
-        <div id="govStateInit" style="text-align:center;padding:40px;color:#5f6368;">Search government awards and subsidies. Try: 小巨人獎</div>
-      </div>
-    </div><!-- end panel-gov-records -->
-
   </main>
 
   <!-- Footer -->
@@ -1176,22 +933,40 @@
     </div>
   </footer>
 
-  <!-- Company Profile Sidebar Overlay -->
-  <div class="sidebar-overlay" id="sidebarOverlay"></div>
+  <!-- Company Profile Modal -->
+  <div class="modal-overlay" id="companyModal" role="dialog" aria-modal="true" aria-label="Company profile">
+    <div class="modal-content">
+      <button class="modal-close" onclick="closeModal()" aria-label="Close">&#10005;</button>
 
-  <!-- Company Profile Sidebar -->
-  <aside class="sidebar" id="profileSidebar" role="complementary" aria-label="Company profile">
-    <div class="sidebar-header">
-      <span class="sidebar-title">Company Profile</span>
-      <button class="sidebar-close" id="sidebarClose" aria-label="Close sidebar">&#10005;</button>
-    </div>
-    <div class="sidebar-body" id="sidebarBody">
-      <div class="sidebar-loading">
-        <div class="spinner" role="status" aria-label="Loading"></div>
-        <div style="margin-top: 8px;">Loading profile...</div>
+      <div id="modalNameEn" class="modal-name-en">Loading...</div>
+      <div id="modalNameZh" class="modal-name-zh"></div>
+      <div id="modalMeta" class="modal-meta"></div>
+
+      <!-- Basic Info -->
+      <div class="modal-section" id="modalBasicInfo">
+        <h3>Basic Info</h3>
+        <div class="info-grid" id="modalInfoGrid"></div>
+      </div>
+
+      <!-- Awards & Government Programs -->
+      <div class="modal-section" id="modalAwards" style="display:none">
+        <h3>Awards &amp; Government Programs</h3>
+        <div id="modalAwardsList" class="award-badges-wrap"></div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="modal-section" id="modalCerts" style="display:none">
+        <h3>Certifications</h3>
+        <div id="modalCertsContent"></div>
+      </div>
+
+      <!-- Quality Indicators -->
+      <div class="modal-section" id="modalScore" style="display:none">
+        <h3>Quality Indicators</h3>
+        <div id="modalScoreContent"></div>
       </div>
     </div>
-  </aside>
+  </div>
 
   <script>
     'use strict'
@@ -1229,11 +1004,8 @@
     const nextBtn            = document.getElementById('nextBtn')
     const errorBanner        = document.getElementById('errorBanner')
 
-    // ── DOM refs — Sidebar ────────────────────────────────────
-    const sidebarOverlay     = document.getElementById('sidebarOverlay')
-    const profileSidebar     = document.getElementById('profileSidebar')
-    const sidebarClose       = document.getElementById('sidebarClose')
-    const sidebarBody        = document.getElementById('sidebarBody')
+    // ── DOM refs — Modal ──────────────────────────────────────
+    const companyModal       = document.getElementById('companyModal')
 
     // ── Utility ────────────────────────────────────────────────
     function debounce(fn, ms) {
@@ -1468,16 +1240,15 @@
 
         const rowId = `contact-${row.id || rawTaxId}`
 
-        const profileBtn = rawTaxId
-          ? ` <button class="company-link" style="font-size:11px;color:var(--text-secondary);font-weight:400;" onclick="openProfile('${escapeHtml(rawTaxId)}', '${displayNameEn.replace(/'/g, "\\'")}')">&#x2139; Profile</button>`
-          : ''
         const addressZhRaw = row.address_zh || ''
         const registeredAddr = row.registered_address || ''
         const mapsUrl = addressZhRaw
           ? `https://www.google.com/maps/search/${encodeURIComponent(addressZhRaw)}`
           : null
 
-        const contactBtn = `<button class="btn-contact" onclick="toggleContact('${rowId}')">Contact Info</button>`
+        const contactBtn = rawTaxId
+          ? `<button class="btn-contact" onclick="openCompanyModal('${escapeHtml(rawTaxId)}')">Contact Info</button>`
+          : ''
 
         const contactPanelItems = []
         if (addressZhRaw) {
@@ -1571,10 +1342,8 @@
             </tr>`
           : ''
 
-        // ISSUE-006: company name click opens Profile page in new tab; Contact Info toggle preserved via button
-        const profileHref = rawTaxId ? `/company/${encodeURIComponent(rawTaxId)}` : null
-        const nameInner = profileHref
-          ? `<a class="company-name-en company-link" href="${profileHref}" target="_blank" rel="noopener noreferrer">${displayNameEn}</a>${listedBadge}`
+        const nameInner = rawTaxId
+          ? `<a class="company-name-en company-link" href="#" onclick="openCompanyModal('${escapeHtml(rawTaxId)}'); return false;">${displayNameEn}</a>${listedBadge}`
           : `<span class="company-name-en">${displayNameEn}</span>${listedBadge}`
 
         // ISSUE-004: show phone and website inline under company name
@@ -1590,7 +1359,7 @@
           <td>
             <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
               ${nameInner}
-              ${contactPanelItems.length > 0 ? contactBtn : ''}
+              ${contactBtn}
             </div>
             ${nameZh ? `<div class="company-name-zh">${nameZh}</div>` : ''}
             ${phoneInline}
@@ -1604,11 +1373,6 @@
           <td>${capital}</td>
         </tr>${contactRow}`
       }).join('')
-    }
-
-    function toggleContact(rowId) {
-      const row = document.getElementById(rowId)
-      if (row) row.classList.toggle('open')
     }
 
     function renderPagination() {
@@ -1642,259 +1406,115 @@
       }
     }
 
-    // ── Company Profile Sidebar ────────────────────────────────
-    function openSidebar() {
-      sidebarOverlay.classList.add('visible')
-      profileSidebar.classList.add('open')
+    // ── Company Profile Modal ──────────────────────────────────
+    async function openCompanyModal(taxId) {
+      companyModal.classList.add('active')
       document.body.style.overflow = 'hidden'
-    }
 
-    function closeSidebar() {
-      sidebarOverlay.classList.remove('visible')
-      profileSidebar.classList.remove('open')
-      document.body.style.overflow = ''
-    }
-
-    async function openProfile(taxId, companyName) {
-      openSidebar()
-      sidebarBody.innerHTML = `
-        <div class="sidebar-loading">
-          <div class="spinner" role="status" aria-label="Loading"></div>
-          <div style="margin-top:8px;">Loading profile...</div>
-        </div>`
+      // Reset to loading state
+      document.getElementById('modalNameEn').textContent = 'Loading...'
+      document.getElementById('modalNameZh').textContent = ''
+      document.getElementById('modalMeta').textContent = ''
+      document.getElementById('modalInfoGrid').innerHTML = ''
+      document.getElementById('modalAwards').style.display = 'none'
+      document.getElementById('modalCerts').style.display = 'none'
+      document.getElementById('modalScore').style.display = 'none'
 
       try {
         const data = await fetchJson(`${API_BASE}/api/company/${encodeURIComponent(taxId)}`)
-        renderProfile(data, companyName)
+
+        // API returns { factories: [...], government_records: [...], patents: [...], supply_chain: [...] }
+        const factories = Array.isArray(data.factories) ? data.factories : []
+        const f = factories[0] || data.factory || {}
+
+        const nameEn = f.official_name_en || f.name_en || f.name || '—'
+        const nameZh = f.name_zh || ''
+        const industry = f.industry_en || '—'
+        const city = [f.city_en, f.district_en].filter(Boolean).join(' / ') || f.city || '—'
+        const status = f.status || ''
+
+        document.getElementById('modalNameEn').textContent = nameEn
+        document.getElementById('modalNameZh').textContent = nameZh
+        document.getElementById('modalMeta').textContent = [industry, city, status].filter(Boolean).join(' · ')
+
+        // Basic info grid
+        const address = f.address_zh || f.registered_address || f.address || ''
+        const regDate = f.registration_date ? formatDate(f.registration_date) : ''
+        const capital = f.capital_amount ? formatCapital(f.capital_amount) : ''
+        const phone = f.phone || ''
+        const email = f.email || ''
+        const website = f.website || f.findbiz_url || ''
+        const fax = f.fax || ''
+
+        const infoItems = [
+          { label: 'Tax ID',              value: escapeHtml(f.tax_id || taxId) },
+          { label: 'Address',             value: escapeHtml(address) },
+          { label: 'Registration Date',   value: escapeHtml(regDate) },
+          { label: 'Capital',             value: escapeHtml(capital) },
+          { label: 'Phone',               value: phone ? escapeHtml(phone) : '' },
+          { label: 'Fax',                 value: fax ? escapeHtml(fax) : '' },
+          { label: 'Email',               value: email ? `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : '' },
+          { label: 'Website',             value: website ? `<a href="${escapeHtml(website.startsWith('http') ? website : 'https://' + website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a>` : '' },
+        ]
+
+        document.getElementById('modalInfoGrid').innerHTML = infoItems
+          .filter(item => item.value)
+          .map(item => `<div><label>${escapeHtml(item.label)}</label><span>${item.value}</span></div>`)
+          .join('')
+
+        // Awards & Government Programs
+        const govRecords = Array.isArray(data.government_records) ? data.government_records : []
+        if (govRecords.length > 0) {
+          document.getElementById('modalAwards').style.display = 'block'
+          document.getElementById('modalAwardsList').innerHTML = govRecords.map(rec => {
+            const name   = escapeHtml(rec.program_name_en || rec.program_name || '—')
+            const agency = escapeHtml(rec.issuing_agency || rec.agency || '')
+            const year   = rec.year ? escapeHtml(String(rec.year)) : null
+            return `<div class="award-badge">
+              <span class="award-badge-name">${name}</span>
+              ${agency ? `<span class="award-badge-agency">${agency}</span>` : ''}
+              ${year   ? `<span class="award-badge-year">${year}</span>` : ''}
+            </div>`
+          }).join('')
+        }
+
+        // Certifications
+        if (f.certifications_en) {
+          document.getElementById('modalCerts').style.display = 'block'
+          document.getElementById('modalCertsContent').innerHTML = certBadges(f.certifications_en)
+        }
+
+        // Quality Indicators
+        const score = f.hidden_champion_score || 0
+        const patentCount = Array.isArray(data.patents) ? data.patents.length : 0
+        if (score > 0 || patentCount > 0) {
+          document.getElementById('modalScore').style.display = 'block'
+          const parts = []
+          if (score > 0) parts.push(`Hidden Champion Score: <strong>${score}</strong>/100`)
+          if (patentCount > 0) parts.push(`Patents: <strong>${patentCount}</strong>`)
+          document.getElementById('modalScoreContent').innerHTML = parts.join('<br>')
+        }
+
       } catch (err) {
-        sidebarBody.innerHTML = `
-          <div class="state-center">
-            <div class="empty-icon">&#9888;</div>
-            <div>Failed to load profile.<br><small>${escapeHtml(err.message)}</small></div>
-          </div>`
+        document.getElementById('modalNameEn').textContent = 'Error loading data'
+        document.getElementById('modalMeta').textContent = err.message
       }
     }
 
-    function renderAwardBadges(govRecords) {
-      const records = Array.isArray(govRecords) ? govRecords : []
-      if (records.length === 0) {
-        return '<span class="profile-empty-note">No government records found.</span>'
-      }
-      return `<div class="award-badges-wrap">${records.map(rec => {
-        const name    = escapeHtml(rec.program_name_en || rec.program_name || '—')
-        const agency  = escapeHtml(rec.issuing_agency || rec.agency || '')
-        const year    = rec.year ? escapeHtml(String(rec.year)) : null
-        return `<div class="award-badge">
-          <span class="award-badge-name">${name}</span>
-          ${agency ? `<span class="award-badge-agency">${agency}</span>` : ''}
-          ${year   ? `<span class="award-badge-year">${year}</span>` : ''}
-        </div>`
-      }).join('')}</div>`
+    function closeModal() {
+      companyModal.classList.remove('active')
+      document.body.style.overflow = ''
     }
 
-    function renderSupplyChain(supplyChain) {
-      const records = Array.isArray(supplyChain) ? supplyChain : []
-      if (records.length === 0) {
-        return '<span class="profile-empty-note">No supply chain data available.</span>'
+    companyModal.addEventListener('click', e => {
+      if (e.target === companyModal) closeModal()
+    })
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && companyModal.classList.contains('active')) {
+        closeModal()
       }
-
-      // Separate into supplier vs buyer relationships
-      // record fields: buyer_name, supplier_name, source_year, purchase_ratio, direction
-      const asSupplier = records.filter(r => r.direction === 'supplier' || r.buyer_name)
-      const asBuyer    = records.filter(r => r.direction === 'buyer'    || r.supplier_name)
-
-      let html = ''
-
-      if (asSupplier.length > 0) {
-        html += `<div class="sc-section-group">
-          <div class="sc-section-group-label">As Supplier to</div>
-          <ul class="sc-section-list">`
-        asSupplier.forEach(r => {
-          const name = escapeHtml(r.buyer_name || r.buyer || '—')
-          const year = r.source_year ? escapeHtml(String(r.source_year)) : null
-          const ratio = r.purchase_ratio != null
-            ? `${Math.round(r.purchase_ratio * 100)}% share`
-            : null
-          const meta = [year, ratio].filter(Boolean).join(' · ')
-          html += `<li class="sc-section-item">
-            <span class="sc-section-item-name">${name}</span>
-            ${meta ? `<span class="sc-section-item-meta">${meta}</span>` : ''}
-          </li>`
-        })
-        html += '</ul></div>'
-      }
-
-      if (asBuyer.length > 0) {
-        html += `<div class="sc-section-group">
-          <div class="sc-section-group-label">As Buyer from</div>
-          <ul class="sc-section-list">`
-        asBuyer.forEach(r => {
-          const name = escapeHtml(r.supplier_name || r.name_zh || r.supplier || '—')
-          const year = r.source_year ? escapeHtml(String(r.source_year)) : null
-          const ratio = r.purchase_ratio != null
-            ? `${Math.round(r.purchase_ratio * 100)}% of purchases`
-            : null
-          const meta = [year, ratio].filter(Boolean).join(' · ')
-          html += `<li class="sc-section-item">
-            <span class="sc-section-item-name">${name}</span>
-            ${meta ? `<span class="sc-section-item-meta">${meta}</span>` : ''}
-          </li>`
-        })
-        html += '</ul></div>'
-      }
-
-      if (!html) {
-        return '<span class="profile-empty-note">No supply chain data available.</span>'
-      }
-
-      return html
-    }
-
-    function renderPatents(patents) {
-      const records = Array.isArray(patents) ? patents : []
-      if (records.length === 0) {
-        return '<span class="profile-empty-note">No patent records found.</span>'
-      }
-
-      const total = records.length
-      const shown = records.slice(0, 5)
-
-      let html = `<div style="font-size:13px;font-weight:500;color:var(--text);margin-bottom:8px;">${total} patent${total !== 1 ? 's' : ''} filed</div>`
-      html += '<ul class="patent-section-list">'
-      shown.forEach(p => {
-        const title = escapeHtml(p.title || p.patent_title || p.title_en || p.title_zh || '—')
-        const ipc   = escapeHtml(p.ipc || p.ipc_code || '')
-        html += `<li class="patent-item">
-          <div class="patent-item-title">${title}</div>
-          ${ipc ? `<div class="patent-item-ipc">${ipc}</div>` : ''}
-        </li>`
-      })
-      html += '</ul>'
-
-      if (total > 5) {
-        html += `<div class="patent-more">and ${total - 5} more...</div>`
-      }
-
-      return html
-    }
-
-    function renderProfile(data, fallbackName) {
-      // API returns { factory: {...}, supply_chain: [...], patents: [...], government_records: [...] }
-      const f = data.factory || data
-      const nameEn   = escapeHtml(f.name_en || fallbackName || '—')
-      const nameZh   = escapeHtml(f.name_zh || '')
-      const taxId    = escapeHtml(f.tax_id || '—')
-      const stockId  = f.stock_id || null
-      const isListed = f.is_listed || 0
-      const industry = escapeHtml(f.industry_en || '—')
-      const city     = escapeHtml(
-        [f.city_en, f.district_en].filter(Boolean).join(', ') || '—'
-      )
-      const address   = escapeHtml(f.address_zh || f.address || '—')
-      const capital   = formatCapital(f.capital_amount)
-      const regDate   = formatDate(f.registration_date)
-      const employees = f.employees != null ? f.employees.toLocaleString() : '—'
-      const phone     = f.phone || null
-      const email     = f.email || null
-      const website   = f.website || f.findbiz_url || null
-      const fax       = f.fax || null
-      const products  = escapeHtml(f.products_en || '—')
-      const certs     = certBadges(f.certifications_en || '')
-      const awardBadges = renderAwardBadges(data.government_records)
-      const supplyChainHtml = renderSupplyChain(data.supply_chain)
-      const patentsHtml = renderPatents(data.patents)
-
-      const listedBadge = isListed
-        ? `<span style="font-size:11px;font-weight:600;background:#e8f0fe;color:#1a73e8;border:1px solid #c5d5f8;border-radius:4px;padding:2px 6px;margin-left:6px;">&#128200; ${stockId ? escapeHtml(stockId) : 'Listed'}</span>`
-        : ''
-
-      sidebarBody.innerHTML = `
-        <div class="profile-name-en">${nameEn}${listedBadge}</div>
-        ${nameZh ? `<div class="profile-name-zh">${nameZh}</div>` : ''}
-
-        <div class="profile-section">
-          <div class="profile-section-title">Basic Information</div>
-          <div class="profile-field">
-            <span class="profile-field-label">Tax ID</span>
-            <span class="profile-field-value">${taxId}</span>
-          </div>
-          <div class="profile-field">
-            <span class="profile-field-label">Industry</span>
-            <span class="profile-field-value">${industry}</span>
-          </div>
-          <div class="profile-field">
-            <span class="profile-field-label">City</span>
-            <span class="profile-field-value">${city}</span>
-          </div>
-          <div class="profile-field">
-            <span class="profile-field-label">Address</span>
-            <span class="profile-field-value">${address}</span>
-          </div>
-          <div class="profile-field">
-            <span class="profile-field-label">Registered</span>
-            <span class="profile-field-value">${regDate}</span>
-          </div>
-        </div>
-
-        <div class="profile-section">
-          <div class="profile-section-title">Business Details</div>
-          <div class="profile-field">
-            <span class="profile-field-label">Capital</span>
-            <span class="profile-field-value">${capital}</span>
-          </div>
-          <div class="profile-field">
-            <span class="profile-field-label">Employees</span>
-            <span class="profile-field-value">${employees}</span>
-          </div>
-          ${phone ? `<div class="profile-field">
-            <span class="profile-field-label">Phone</span>
-            <span class="profile-field-value">${escapeHtml(phone)}</span>
-          </div>` : ''}
-          ${email ? `<div class="profile-field">
-            <span class="profile-field-label">Email</span>
-            <span class="profile-field-value">
-              <a href="mailto:${escapeHtml(email)}" class="company-link" style="font-size:13px;">${escapeHtml(email)}</a>
-            </span>
-          </div>` : ''}
-          ${website ? `<div class="profile-field">
-            <span class="profile-field-label">Website</span>
-            <span class="profile-field-value">
-              <a href="${escapeHtml(website.startsWith('http') ? website : 'https://' + website)}" target="_blank" rel="noopener noreferrer" class="company-link" style="font-size:13px;">${escapeHtml(website)}</a>
-            </span>
-          </div>` : ''}
-          ${fax ? `<div class="profile-field">
-            <span class="profile-field-label">Fax</span>
-            <span class="profile-field-value">${escapeHtml(fax)}</span>
-          </div>` : ''}
-        </div>
-
-        <div class="profile-section">
-          <div class="profile-section-title">Products &amp; Certifications</div>
-          <div class="profile-field">
-            <span class="profile-field-label">Products</span>
-            <span class="profile-field-value">${products}</span>
-          </div>
-          <div class="profile-field" style="align-items:flex-start;">
-            <span class="profile-field-label" style="padding-top:2px;">Certifications</span>
-            <span class="profile-field-value">${certs}</span>
-          </div>
-        </div>
-
-        <div class="profile-section">
-          <div class="profile-section-title">Awards &amp; Government Records</div>
-          <div style="padding-top:4px;">${awardBadges}</div>
-        </div>
-
-        <div class="profile-section">
-          <div class="profile-section-title">Supply Chain Relationships</div>
-          <div style="padding-top:4px;">${supplyChainHtml}</div>
-        </div>
-
-        <div class="profile-section">
-          <div class="profile-section-title">Patents (Recent 3 Years)</div>
-          <div style="padding-top:4px;">${patentsHtml}</div>
-        </div>`
-    }
+    })
 
     // ── Suggest Dropdown ────────────────────────────────────────
     const suggestDropdown = document.getElementById('suggestDropdown')
@@ -2095,15 +1715,6 @@
       }
     })
 
-    // ── Event Handlers — Sidebar ───────────────────────────────
-    sidebarClose.addEventListener('click', closeSidebar)
-    sidebarOverlay.addEventListener('click', closeSidebar)
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && profileSidebar.classList.contains('open')) {
-        closeSidebar()
-      }
-    })
 
     // ── Init ───────────────────────────────────────────────────
     async function init() {
@@ -2121,137 +1732,6 @@
 
     init()
 
-    // ── Tab System ──────────────────────────────────────────────
-    function activateTab(tabId) {
-      document.querySelectorAll('.tab-btn').forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tabId)
-      })
-      document.querySelectorAll('.tab-panel').forEach(panel => {
-        panel.classList.toggle('active', panel.id === 'panel-' + tabId)
-      })
-    }
-
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-      btn.addEventListener('click', () => activateTab(btn.dataset.tab))
-    })
-
-    // ── Supply Chain Search ─────────────────────────────────────
-    const scCompanyInput = document.getElementById('scCompanyInput')
-    const scSearchBtn = document.getElementById('scSearchBtn')
-    const scResultsBody = document.getElementById('scResultsBody')
-    const scResultsCount = document.getElementById('scResultsCount')
-
-    function scSetState(loading, empty, init) {
-      document.getElementById('scStateLoading').style.display = loading ? '' : 'none'
-      document.getElementById('scStateEmpty').style.display = empty ? '' : 'none'
-      document.getElementById('scStateInit').style.display = init ? '' : 'none'
-      scResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
-    }
-
-    async function searchSupplyChain() {
-      const company = scCompanyInput.value.trim()
-      if (!company) { scCompanyInput.focus(); return }
-      scSetState(true, false, false)
-      scResultsCount.textContent = ''
-      try {
-        const data = await fetchJson(API_BASE + '/api/supply-chain?buyer=' + encodeURIComponent(company))
-        const rows = data.suppliers || []
-        if (rows.length === 0) { scSetState(false, true, false); return }
-        scSetState(false, false, false)
-        const matchRate = data.match_rate != null ? ' (' + Math.round(data.match_rate * 100) + '% matched)' : ''
-        scResultsCount.textContent = rows.length + ' supplier' + (rows.length !== 1 ? 's' : '') + ' found' + matchRate
-        scResultsBody.innerHTML = rows.map(row => {
-          const supplier = escapeHtml(row.name_zh || '')
-          const category = escapeHtml(row.category || '')
-          const product = escapeHtml(row.product || '')
-          const factory = row.factory
-          const factoryInfo = factory
-            ? escapeHtml(factory.name_en || '') + ' <span style="color:#5f6368;font-size:12px;">(' + escapeHtml(factory.city_en || '') + ')</span>'
-            : '<span style="color:#9aa0a6;">Not in factory DB</span>'
-          return '<tr><td>' + supplier + '</td><td>' + category + '</td><td>' + product + '</td><td>' + factoryInfo + '</td></tr>'
-        }).join('')
-      } catch (err) {
-        scSetState(false, true, false)
-        scResultsCount.textContent = 'Error: ' + err.message
-      }
-    }
-
-    scSearchBtn.addEventListener('click', searchSupplyChain)
-    scCompanyInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchSupplyChain() })
-
-    // ── Patents Search ──────────────────────────────────────────
-    const patInput = document.getElementById('patInput')
-    const patSearchBtn = document.getElementById('patSearchBtn')
-    const patResultsBody = document.getElementById('patResultsBody')
-    const patResultsCount = document.getElementById('patResultsCount')
-
-    function patSetState(loading, empty, init) {
-      document.getElementById('patStateLoading').style.display = loading ? '' : 'none'
-      document.getElementById('patStateEmpty').style.display = empty ? '' : 'none'
-      document.getElementById('patStateInit').style.display = init ? '' : 'none'
-      patResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
-    }
-
-    async function searchPatents() {
-      const q = patInput.value.trim()
-      if (!q) { patInput.focus(); return }
-      patSetState(true, false, false)
-      patResultsCount.textContent = ''
-      try {
-        const data = await fetchJson(API_BASE + '/api/patents?applicant=' + encodeURIComponent(q))
-        const rows = data.results || []
-        if (rows.length === 0) { patSetState(false, true, false); return }
-        patSetState(false, false, false)
-        patResultsCount.textContent = data.total + ' patent' + (data.total !== 1 ? 's' : '') + ' found'
-        patResultsBody.innerHTML = rows.map(row => {
-          return '<tr><td>' + escapeHtml(row.patent_number || '') + '</td><td>' + escapeHtml(row.title_zh || '') + '</td><td>' + escapeHtml(row.applicant_name || '') + '</td><td>' + escapeHtml(row.tech_category || '') + '</td><td>' + escapeHtml(row.publication_date || '') + '</td></tr>'
-        }).join('')
-      } catch (err) {
-        patSetState(false, true, false)
-        patResultsCount.textContent = 'Error: ' + err.message
-      }
-    }
-
-    patSearchBtn.addEventListener('click', searchPatents)
-    patInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchPatents() })
-
-    // ── Government Records Search ───────────────────────────────
-    const govInput = document.getElementById('govInput')
-    const govSearchBtn = document.getElementById('govSearchBtn')
-    const govResultsBody = document.getElementById('govResultsBody')
-    const govResultsCount = document.getElementById('govResultsCount')
-
-    function govSetState(loading, empty, init) {
-      document.getElementById('govStateLoading').style.display = loading ? '' : 'none'
-      document.getElementById('govStateEmpty').style.display = empty ? '' : 'none'
-      document.getElementById('govStateInit').style.display = init ? '' : 'none'
-      govResultsBody.parentElement.parentElement.style.display = (!loading && !empty && !init) ? '' : 'none'
-    }
-
-    async function searchGovRecords() {
-      const q = govInput.value.trim()
-      if (!q) { govInput.focus(); return }
-      govSetState(true, false, false)
-      govResultsCount.textContent = ''
-      try {
-        const data = await fetchJson(API_BASE + '/api/government-records?company=' + encodeURIComponent(q))
-        const rows = data.results || []
-        if (rows.length === 0) { govSetState(false, true, false); return }
-        govSetState(false, false, false)
-        govResultsCount.textContent = data.total + ' record' + (data.total !== 1 ? 's' : '') + ' found'
-        govResultsBody.innerHTML = rows.map(row => {
-          let details = ''
-          try { const d = JSON.parse(row.details || '{}'); details = d.details || '' } catch(e) { details = row.details || '' }
-          return '<tr><td>' + escapeHtml(row.company_name || '') + '</td><td>' + escapeHtml((row.program_name_en || row.program_name || '')) + '</td><td>' + escapeHtml(row.issuing_agency || '') + '</td><td>' + escapeHtml(details) + '</td></tr>'
-        }).join('')
-      } catch (err) {
-        govSetState(false, true, false)
-        govResultsCount.textContent = 'Error: ' + err.message
-      }
-    }
-
-    govSearchBtn.addEventListener('click', searchGovRecords)
-    govInput.addEventListener('keydown', e => { if (e.key === 'Enter') searchGovRecords() })
   </script>
 </body>
 </html>
