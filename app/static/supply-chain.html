@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Supply Chain Explorer — TMDB</title>
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #1a73e8;
+      --primary-hover: #1558b0;
+      --text: #202124;
+      --text-secondary: #5f6368;
+      --border: #dadce0;
+      --border-hover: #bdc1c6;
+      --danger: #d93025;
+      --success: #1e8e3e;
+      --row-hover: #f1f3f4;
+      --shadow: 0 1px 3px rgba(60,64,67,0.15), 0 2px 6px rgba(60,64,67,0.1);
+      --radius: 8px;
+
+      --node-center: #1a56db;
+      --node-supplier: #059669;
+      --node-buyer: #d97706;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 24px;
+    }
+
+    .header-inner {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .back-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: var(--primary);
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      padding: 4px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      cursor: pointer;
+      transition: background 0.15s, border-color 0.15s;
+      white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .back-btn:hover {
+      background: #e8f0fe;
+      border-color: var(--primary);
+    }
+
+    .header-title {
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .header-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-left: auto;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    /* ── Page title ── */
+    .page-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+    }
+
+    /* ── Search bar ── */
+    .search-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+    }
+
+    .search-row {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .search-field {
+      flex: 1 1 280px;
+      min-width: 0;
+    }
+
+    .search-field label {
+      display: block;
+      font-size: 12px;
+      font-weight: 500;
+      color: var(--text-secondary);
+      margin-bottom: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .search-field input,
+    .search-field select {
+      width: 100%;
+      height: 40px;
+      padding: 0 12px;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 14px;
+      color: var(--text);
+      background: var(--surface);
+      outline: none;
+      transition: border-color 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      appearance: none;
+      -webkit-appearance: none;
+    }
+
+    .search-field input:focus,
+    .search-field select:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(26,115,232,0.15);
+    }
+
+    .select-wrapper {
+      position: relative;
+    }
+
+    .select-wrapper::after {
+      content: '';
+      position: absolute;
+      right: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      width: 0;
+      height: 0;
+      border-left: 5px solid transparent;
+      border-right: 5px solid transparent;
+      border-top: 5px solid var(--text-secondary);
+      pointer-events: none;
+    }
+
+    .btn {
+      height: 40px;
+      padding: 0 20px;
+      border: none;
+      border-radius: 6px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: background 0.15s, box-shadow 0.15s;
+      font-family: inherit;
+      white-space: nowrap;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 1px 4px rgba(26,115,232,0.4);
+    }
+
+    .btn:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    /* ── Graph card ── */
+    .graph-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow: hidden;
+      flex: 1;
+      min-height: 480px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .graph-canvas {
+      flex: 1;
+      width: 100%;
+      min-height: 480px;
+    }
+
+    /* ── Graph state overlays ── */
+    .graph-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      pointer-events: none;
+    }
+
+    .graph-overlay .overlay-icon {
+      font-size: 36px;
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Legend ── */
+    .legend {
+      display: flex;
+      gap: 16px;
+      padding: 10px 16px;
+      border-top: 1px solid var(--border);
+      flex-wrap: wrap;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    /* ── Details panel ── */
+    .details-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 16px 20px;
+    }
+
+    .details-title {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 12px;
+    }
+
+    .details-empty {
+      color: var(--text-secondary);
+      font-size: 13px;
+    }
+
+    .details-content {
+      display: none;
+    }
+
+    .details-content.visible {
+      display: block;
+    }
+
+    .details-name {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 4px;
+    }
+
+    .details-meta {
+      font-size: 13px;
+      color: var(--text-secondary);
+      margin-bottom: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .details-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .badge-center {
+      background: #dbeafe;
+      color: #1e40af;
+    }
+
+    .badge-supplier {
+      background: #d1fae5;
+      color: #065f46;
+    }
+
+    .badge-buyer {
+      background: #fef3c7;
+      color: #92400e;
+    }
+
+    .details-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      color: var(--primary);
+      font-size: 13px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .details-link:hover {
+      text-decoration: underline;
+    }
+
+    /* ── D3 SVG styles ── */
+    .node circle {
+      stroke-width: 2;
+      cursor: pointer;
+    }
+
+    .node text {
+      font-size: 11px;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      pointer-events: none;
+      fill: #202124;
+    }
+
+    .link {
+      stroke: #bdc1c6;
+      stroke-opacity: 0.7;
+    }
+
+    .link.highlighted {
+      stroke: var(--primary);
+      stroke-opacity: 1;
+    }
+
+    .link-label {
+      font-size: 10px;
+      fill: var(--text-secondary);
+      pointer-events: none;
+    }
+
+    /* ── RWD ── */
+    @media (max-width: 600px) {
+      .header-subtitle { display: none; }
+      .main { padding: 12px; }
+      .graph-canvas { min-height: 340px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header class="header">
+    <div class="header-inner">
+      <a href="/" class="back-btn">&#8592; Back to Search</a>
+      <span class="header-title">Supply Chain Explorer</span>
+      <span class="header-subtitle">Taiwan Manufacturing Database</span>
+    </div>
+  </header>
+
+  <!-- Main content -->
+  <main class="main">
+
+    <!-- Search bar -->
+    <div class="search-card">
+      <div class="search-row">
+        <div class="search-field" style="flex:2;">
+          <label for="scInput">Company Name or Tax ID</label>
+          <input
+            type="text"
+            id="scInput"
+            placeholder="e.g. 台積電, TSMC, 23454097"
+            autocomplete="off"
+          >
+        </div>
+        <div class="search-field" style="flex:0 0 120px;">
+          <label for="scDepth">Depth</label>
+          <div class="select-wrapper">
+            <select id="scDepth">
+              <option value="1" selected>1 hop</option>
+              <option value="2">2 hops</option>
+              <option value="3">3 hops</option>
+            </select>
+          </div>
+        </div>
+        <div style="align-self:flex-end;">
+          <button class="btn btn-primary" id="scGoBtn">
+            &#128269; Go
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graph card -->
+    <div class="graph-card" id="graphCard">
+      <!-- State: initial -->
+      <div class="graph-overlay" id="overlayInit">
+        <span class="overlay-icon">&#128279;</span>
+        <span>Enter a company name to explore supply chain relationships</span>
+      </div>
+
+      <!-- State: loading -->
+      <div class="graph-overlay" id="overlayLoading" style="display:none;">
+        <div class="spinner"></div>
+        <span>Loading graph…</span>
+      </div>
+
+      <!-- State: empty -->
+      <div class="graph-overlay" id="overlayEmpty" style="display:none;">
+        <span class="overlay-icon">&#128202;</span>
+        <span>No supply chain data found for this company</span>
+      </div>
+
+      <!-- D3 canvas -->
+      <svg class="graph-canvas" id="graphSvg" style="display:none;"></svg>
+
+      <!-- Legend -->
+      <div class="legend" id="graphLegend" style="display:none;">
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--node-center);"></div>
+          <span>Search target</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--node-supplier);"></div>
+          <span>Supplier</span>
+        </div>
+        <div class="legend-item">
+          <div class="legend-dot" style="background:var(--node-buyer);"></div>
+          <span>Customer / Buyer</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Details panel -->
+    <div class="details-card">
+      <div class="details-title">Node Details</div>
+      <div class="details-empty" id="detailsEmpty">Click a node in the graph to view details.</div>
+      <div class="details-content" id="detailsContent">
+        <div class="details-name" id="detailsName"></div>
+        <div class="details-meta">
+          <span id="detailsBadge" class="details-badge"></span>
+          <span id="detailsTaxId" style="font-size:12px;"></span>
+          <span id="detailsYear" style="font-size:12px;"></span>
+          <span id="detailsRatio" style="font-size:12px;"></span>
+        </div>
+        <a class="details-link" id="detailsProfileLink" href="#" target="_blank">
+          View full profile &#8594;
+        </a>
+      </div>
+    </div>
+
+  </main>
+
+  <script>
+    'use strict'
+
+    const API_BASE = ''
+
+    // ── DOM refs ────────────────────────────────────────────────────
+    const scInput = document.getElementById('scInput')
+    const scDepth = document.getElementById('scDepth')
+    const scGoBtn = document.getElementById('scGoBtn')
+    const overlayInit = document.getElementById('overlayInit')
+    const overlayLoading = document.getElementById('overlayLoading')
+    const overlayEmpty = document.getElementById('overlayEmpty')
+    const graphSvg = document.getElementById('graphSvg')
+    const graphLegend = document.getElementById('graphLegend')
+    const detailsEmpty = document.getElementById('detailsEmpty')
+    const detailsContent = document.getElementById('detailsContent')
+
+    // ── State helper ────────────────────────────────────────────────
+    function setGraphState(state) {
+      overlayInit.style.display = state === 'init' ? '' : 'none'
+      overlayLoading.style.display = state === 'loading' ? '' : 'none'
+      overlayEmpty.style.display = state === 'empty' ? '' : 'none'
+      graphSvg.style.display = state === 'graph' ? '' : 'none'
+      graphLegend.style.display = state === 'graph' ? '' : 'none'
+    }
+
+    // ── Fetch helper ────────────────────────────────────────────────
+    async function fetchJson(url) {
+      const res = await fetch(url)
+      if (!res.ok) throw new Error(`HTTP ${res.status}`)
+      return res.json()
+    }
+
+    // ── D3 graph ─────────────────────────────────────────────────────
+    let simulation = null
+
+    function renderGraph(nodes, edges) {
+      // Clear previous
+      d3.select('#graphSvg').selectAll('*').remove()
+      if (simulation) simulation.stop()
+
+      const svg = d3.select('#graphSvg')
+      const card = document.getElementById('graphCard')
+      const W = card.clientWidth || 800
+      const H = Math.max(card.clientHeight - 44, 440) // 44 = legend height
+
+      svg.attr('viewBox', `0 0 ${W} ${H}`)
+
+      // Arrow markers
+      const defs = svg.append('defs')
+      const markerTypes = [
+        { id: 'arrow-default', color: '#bdc1c6' },
+        { id: 'arrow-highlighted', color: '#1a73e8' },
+      ]
+      markerTypes.forEach(({ id, color }) => {
+        defs.append('marker')
+          .attr('id', id)
+          .attr('viewBox', '0 -4 8 8')
+          .attr('refX', 20)
+          .attr('refY', 0)
+          .attr('markerWidth', 6)
+          .attr('markerHeight', 6)
+          .attr('orient', 'auto')
+          .append('path')
+          .attr('d', 'M0,-4L8,0L0,4')
+          .attr('fill', color)
+      })
+
+      // Zoom container
+      const g = svg.append('g')
+
+      svg.call(
+        d3.zoom()
+          .scaleExtent([0.3, 4])
+          .on('zoom', (event) => g.attr('transform', event.transform))
+      )
+
+      // Build lookup for edge highlighting
+      const linkedByIndex = {}
+      edges.forEach(e => {
+        linkedByIndex[`${e.source.id ?? e.source}-${e.target.id ?? e.target}`] = true
+      })
+
+      function isConnected(a, b) {
+        return (
+          linkedByIndex[`${a.id}-${b.id}`] ||
+          linkedByIndex[`${b.id}-${a.id}`]
+        )
+      }
+
+      // Links
+      const link = g.append('g')
+        .attr('class', 'links')
+        .selectAll('line')
+        .data(edges)
+        .join('line')
+        .attr('class', 'link')
+        .attr('stroke-width', 1.5)
+        .attr('marker-end', 'url(#arrow-default)')
+
+      // Link labels (ratio)
+      const linkLabel = g.append('g')
+        .selectAll('text')
+        .data(edges.filter(e => e.ratio != null))
+        .join('text')
+        .attr('class', 'link-label')
+        .attr('text-anchor', 'middle')
+        .text(e => `${e.ratio}%`)
+
+      // Nodes
+      const nodeGroup = g.append('g')
+        .attr('class', 'nodes')
+        .selectAll('g')
+        .data(nodes)
+        .join('g')
+        .attr('class', 'node')
+        .call(
+          d3.drag()
+            .on('start', (event, d) => {
+              if (!event.active) simulation.alphaTarget(0.3).restart()
+              d.fx = d.x
+              d.fy = d.y
+            })
+            .on('drag', (event, d) => {
+              d.fx = event.x
+              d.fy = event.y
+            })
+            .on('end', (event, d) => {
+              if (!event.active) simulation.alphaTarget(0)
+              d.fx = null
+              d.fy = null
+            })
+        )
+        .on('click', (event, d) => {
+          event.stopPropagation()
+          showDetails(d, edges)
+          highlightNode(d)
+        })
+
+      nodeGroup.append('circle')
+        .attr('r', d => d.type === 'center' ? 28 : 20)
+        .attr('fill', d => {
+          if (d.type === 'center') return '#1a56db'
+          if (d.type === 'supplier') return '#059669'
+          return '#d97706'
+        })
+        .attr('stroke', d => {
+          if (d.type === 'center') return '#1241a8'
+          if (d.type === 'supplier') return '#047857'
+          return '#b45309'
+        })
+
+      nodeGroup.append('text')
+        .attr('dy', d => d.type === 'center' ? 42 : 34)
+        .attr('text-anchor', 'middle')
+        .text(d => {
+          const label = d.name_en || d.name || d.id
+          return label.length > 20 ? label.slice(0, 20) + '…' : label
+        })
+
+      // Hover highlight edges
+      nodeGroup
+        .on('mouseenter', (event, d) => {
+          link.classed('highlighted', e => {
+            const src = e.source.id ?? e.source
+            const tgt = e.target.id ?? e.target
+            return src === d.id || tgt === d.id
+          })
+          link.attr('marker-end', e => {
+            const src = e.source.id ?? e.source
+            const tgt = e.target.id ?? e.target
+            return (src === d.id || tgt === d.id)
+              ? 'url(#arrow-highlighted)'
+              : 'url(#arrow-default)'
+          })
+        })
+        .on('mouseleave', () => {
+          link.classed('highlighted', false)
+          link.attr('marker-end', 'url(#arrow-default)')
+        })
+
+      // Click on background clears selection
+      svg.on('click', () => clearDetails())
+
+      // Force simulation
+      simulation = d3.forceSimulation(nodes)
+        .force('link', d3.forceLink(edges).id(d => d.id).distance(120))
+        .force('charge', d3.forceManyBody().strength(-400))
+        .force('center', d3.forceCenter(W / 2, H / 2))
+        .force('collision', d3.forceCollide(50))
+        .on('tick', () => {
+          link
+            .attr('x1', d => d.source.x)
+            .attr('y1', d => d.source.y)
+            .attr('x2', d => d.target.x)
+            .attr('y2', d => d.target.y)
+
+          linkLabel
+            .attr('x', d => (d.source.x + d.target.x) / 2)
+            .attr('y', d => (d.source.y + d.target.y) / 2 - 6)
+
+          nodeGroup.attr('transform', d => `translate(${d.x},${d.y})`)
+        })
+    }
+
+    // ── Node highlight ───────────────────────────────────────────────
+    function highlightNode(d) {
+      d3.selectAll('.node circle')
+        .attr('stroke-width', n => n.id === d.id ? 4 : 2)
+    }
+
+    // ── Details panel ────────────────────────────────────────────────
+    function showDetails(d, edges) {
+      detailsEmpty.style.display = 'none'
+      detailsContent.classList.add('visible')
+
+      document.getElementById('detailsName').textContent =
+        d.name || d.name_en || d.id
+
+      const badge = document.getElementById('detailsBadge')
+      badge.textContent = d.type === 'center' ? 'Search Target'
+        : d.type === 'supplier' ? 'Supplier' : 'Customer / Buyer'
+      badge.className = 'details-badge badge-' + (d.type === 'center' ? 'center'
+        : d.type === 'supplier' ? 'supplier' : 'buyer')
+
+      document.getElementById('detailsTaxId').textContent =
+        d.id ? `Tax ID: ${d.id}` : ''
+
+      // Find edge connected to this node for year/ratio
+      const connectedEdge = edges.find(e => {
+        const src = e.source.id ?? e.source
+        const tgt = e.target.id ?? e.target
+        return src === d.id || tgt === d.id
+      })
+      document.getElementById('detailsYear').textContent =
+        connectedEdge?.year ? `Year: ${connectedEdge.year}` : ''
+      document.getElementById('detailsRatio').textContent =
+        connectedEdge?.ratio != null ? `Ratio: ${connectedEdge.ratio}%` : ''
+
+      const link = document.getElementById('detailsProfileLink')
+      link.href = `/company/${d.id}`
+      link.style.display = d.id ? '' : 'none'
+    }
+
+    function clearDetails() {
+      detailsEmpty.style.display = ''
+      detailsContent.classList.remove('visible')
+      d3.selectAll('.node circle').attr('stroke-width', 2)
+    }
+
+    // ── Search ───────────────────────────────────────────────────────
+    async function runSearch() {
+      const company = scInput.value.trim()
+      if (!company) { scInput.focus(); return }
+
+      const depth = scDepth.value
+      setGraphState('loading')
+      scGoBtn.disabled = true
+      clearDetails()
+
+      try {
+        const data = await fetchJson(
+          `${API_BASE}/api/supply-chain/graph?company=${encodeURIComponent(company)}&depth=${depth}`
+        )
+
+        const nodes = data.nodes ?? []
+        const edges = data.edges ?? []
+
+        if (nodes.length === 0) {
+          setGraphState('empty')
+          return
+        }
+
+        setGraphState('graph')
+        // Wait one tick so SVG is visible and has dimensions
+        requestAnimationFrame(() => renderGraph(nodes, edges))
+      } catch (err) {
+        console.error(err)
+        setGraphState('empty')
+      } finally {
+        scGoBtn.disabled = false
+      }
+    }
+
+    // ── Event bindings ───────────────────────────────────────────────
+    scGoBtn.addEventListener('click', runSearch)
+
+    scInput.addEventListener('keydown', e => {
+      if (e.key === 'Enter') runSearch()
+    })
+
+    // ── URL param pre-fill ───────────────────────────────────────────
+    ;(function () {
+      const params = new URLSearchParams(window.location.search)
+      const q = params.get('company') || params.get('q')
+      if (q) {
+        scInput.value = q
+        runSearch()
+      }
+    })()
+  </script>
+
+</body>
+</html>

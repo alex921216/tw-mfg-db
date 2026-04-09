@@ -9,6 +9,8 @@ Endpoints:
   GET /api/supply-chain?buyer=台積電       — TSMC 供應商列表（supply_chain 表）
   GET /api/supply-chain/list               — 所有有供應鏈資料的買方
   GET /api/supply-chain-links?company=...  — 財報來源供應鏈查詢（supply_chain_links 表）
+  GET /api/supply-chain/graph?company=...  — 供應鏈關係圖（supply_chain_links 表，圖表用）
+  GET /api/supply-chain/buyers             — 所有有供應鏈資料的買方（supply_chain_links 表）
   GET /api/factory/{id}/supply-chain-tags  — 工廠的買方標籤
   GET /api/patents                         — 專利資料查詢
   GET /api/government-records              — 政府紀錄查詢
@@ -1412,6 +1414,326 @@ def get_hidden_champions(
 
 
 # ---------------------------------------------------------------------------
+# GET /api/supply-chain/graph  — 供應鏈關係圖（圖表專用）
+# ---------------------------------------------------------------------------
+
+@app.get(
+  '/api/supply-chain/graph',
+  summary='Supply chain graph for a company',
+  description='回傳以特定公司為中心的供應鏈關係圖，供前端圖表渲染使用。支援 depth=1~3 的多層關係展開。',
+)
+def get_supply_chain_graph(
+  company: str = Query(..., description='公司名稱或統一編號'),
+  depth: int = Query(default=1, ge=1, le=3, description='展開深度（1=直接上下游，2=二度關係，3=三度關係）'),
+):
+  """
+  以指定公司為中心，回傳 depth 層供應鏈關係圖。
+
+  Node 結構：
+    id      — tax_id 優先，否則用 name_<名稱>
+    name    — 英文名稱（若能從 factories 表查到）
+    name_zh — 中文名稱
+    type    — 'center' | 'buyer' | 'supplier'
+    tax_id  — 統一編號（可能為 null）
+
+  Edge 結構：
+    source  — 供應商 node id
+    target  — 買方 node id
+    type    — 'supplier'
+    year    — 年份
+    ratio   — 採購佔比（%）
+  """
+  company = company.strip()
+  if not company:
+    raise HTTPException(
+      status_code=400,
+      detail={'error': {'code': 'MISSING_PARAM', 'message': 'company 參數不能為空'}},
+    )
+
+  def _node_id(tax_id: Optional[str], name: str) -> str:
+    return tax_id if tax_id else f'name_{name}'
+
+  def _fetch_factory_info(cur: sqlite3.Cursor, tax_ids: list[str]) -> dict[str, dict]:
+    """從 factories 取每個 tax_id 的代表性名稱（優先取 official_name_en，其次最短 name_en）。"""
+    if not tax_ids:
+      return {}
+    placeholders = ','.join('?' * len(tax_ids))
+    # 取每個 tax_id 的所有記錄，後面再挑最佳的
+    cur.execute(
+      f'SELECT tax_id, name_en, name_zh, official_name_en FROM factories WHERE tax_id IN ({placeholders})',
+      tax_ids,
+    )
+    result: dict[str, dict] = {}
+    for row in cur.fetchall():
+      tid = row['tax_id']
+      if tid not in result:
+        result[tid] = {
+          'name_en': row['official_name_en'] or row['name_en'],
+          'name_zh': row['name_zh'],
+        }
+      else:
+        # 已有記錄：若 official_name_en 有值則優先，否則比較名稱長度取短的（較可能是總公司）
+        existing = result[tid]
+        if row['official_name_en'] and not existing['name_en']:
+          result[tid]['name_en'] = row['official_name_en']
+        elif (
+          not existing['name_en'] or
+          (row['name_en'] and len(row['name_en']) < len(existing['name_en'] or ''))
+        ):
+          if not (row['official_name_en'] or existing.get('name_en', '').startswith(row['name_en'] or '')):
+            result[tid]['name_en'] = row['name_en']
+        if row['name_zh'] and (not existing['name_zh'] or len(row['name_zh']) < len(existing['name_zh'])):
+          result[tid]['name_zh'] = row['name_zh']
+    return result
+
+  try:
+    with get_db() as conn:
+      cur = conn.cursor()
+
+      # 解析起始公司（先精確 tax_id，再名稱模糊）
+      cur.execute(
+        """
+        SELECT buyer_name AS name, buyer_tax_id AS tax_id
+        FROM supply_chain_links
+        WHERE buyer_tax_id = ?
+        UNION
+        SELECT supplier_name AS name, supplier_tax_id AS tax_id
+        FROM supply_chain_links
+        WHERE supplier_tax_id = ?
+        LIMIT 1
+        """,
+        (company, company),
+      )
+      center_row = cur.fetchone()
+
+      if not center_row:
+        cur.execute(
+          """
+          SELECT buyer_name AS name, buyer_tax_id AS tax_id
+          FROM supply_chain_links
+          WHERE buyer_name LIKE ?
+          LIMIT 1
+          """,
+          (f'%{company}%',),
+        )
+        center_row = cur.fetchone()
+
+      if not center_row:
+        cur.execute(
+          """
+          SELECT supplier_name AS name, supplier_tax_id AS tax_id
+          FROM supply_chain_links
+          WHERE supplier_name LIKE ?
+          LIMIT 1
+          """,
+          (f'%{company}%',),
+        )
+        center_row = cur.fetchone()
+
+      if not center_row:
+        raise HTTPException(
+          status_code=404,
+          detail={'error': {'code': 'NOT_FOUND', 'message': f'找不到公司：{company}'}},
+        )
+
+      center_name = center_row['name']
+      center_tax_id = center_row['tax_id']
+      center_id = _node_id(center_tax_id, center_name)
+
+      nodes: dict[str, dict] = {
+        center_id: {
+          'id': center_id,
+          'name': center_name,
+          'name_zh': center_name,
+          'type': 'center',
+          'is_center': True,
+          'tax_id': center_tax_id,
+        }
+      }
+      edges_raw: list[dict] = []
+
+      # BFS 展開 depth 層（同時向上、向下）
+      frontier: list[tuple[str, Optional[str]]] = [(center_name, center_tax_id)]
+
+      for _level in range(depth):
+        next_frontier: list[tuple[str, Optional[str]]] = []
+
+        for node_name, node_tax_id in frontier:
+          node_id = _node_id(node_tax_id, node_name)
+
+          # 向下：該節點為 buyer，找 supplier
+          if node_tax_id:
+            cond = '(buyer_tax_id = ? OR buyer_name = ?)'
+            p: list = [node_tax_id, node_name]
+          else:
+            cond = 'buyer_name = ?'
+            p = [node_name]
+
+          cur.execute(
+            f"""
+            SELECT supplier_tax_id, supplier_name,
+                   source_year, purchase_amount, purchase_ratio
+            FROM supply_chain_links
+            WHERE {cond}
+            ORDER BY source_year DESC, purchase_ratio DESC
+            """,
+            p,
+          )
+          for row in cur.fetchall():
+            sup_tax_id = row['supplier_tax_id']
+            sup_name = row['supplier_name']
+            sup_id = _node_id(sup_tax_id, sup_name)
+
+            if sup_id not in nodes:
+              nodes[sup_id] = {
+                'id': sup_id,
+                'name': sup_name,
+                'name_zh': sup_name,
+                'type': 'supplier',
+                'is_center': False,
+                'tax_id': sup_tax_id,
+              }
+              next_frontier.append((sup_name, sup_tax_id))
+
+            edges_raw.append({
+              'source': sup_id,
+              'target': node_id,
+              'type': 'supplier',
+              'year': row['source_year'],
+              'ratio': row['purchase_ratio'],
+              'amount': row['purchase_amount'],
+            })
+
+          # 向上：該節點為 supplier，找 buyer
+          if node_tax_id:
+            cond_up = '(supplier_tax_id = ? OR supplier_name = ?)'
+            p_up: list = [node_tax_id, node_name]
+          else:
+            cond_up = 'supplier_name = ?'
+            p_up = [node_name]
+
+          cur.execute(
+            f"""
+            SELECT buyer_tax_id, buyer_name,
+                   source_year, purchase_amount, purchase_ratio
+            FROM supply_chain_links
+            WHERE {cond_up}
+            ORDER BY source_year DESC, purchase_ratio DESC
+            """,
+            p_up,
+          )
+          for row in cur.fetchall():
+            buyer_tax_id_val = row['buyer_tax_id']
+            buyer_name_val = row['buyer_name']
+            buyer_id = _node_id(buyer_tax_id_val, buyer_name_val)
+
+            if buyer_id not in nodes:
+              nodes[buyer_id] = {
+                'id': buyer_id,
+                'name': buyer_name_val,
+                'name_zh': buyer_name_val,
+                'type': 'buyer',
+                'is_center': False,
+                'tax_id': buyer_tax_id_val,
+              }
+              next_frontier.append((buyer_name_val, buyer_tax_id_val))
+
+            edges_raw.append({
+              'source': node_id,
+              'target': buyer_id,
+              'type': 'supplier',
+              'year': row['source_year'],
+              'ratio': row['purchase_ratio'],
+              'amount': row['purchase_amount'],
+            })
+
+        frontier = next_frontier
+
+      # 從 factories 補充英文名（只覆蓋 name，保留 name_zh 中文不動）
+      all_tax_ids = [n['tax_id'] for n in nodes.values() if n['tax_id']]
+      factory_info = _fetch_factory_info(cur, all_tax_ids)
+      for node in nodes.values():
+        tid = node['tax_id']
+        if tid and tid in factory_info:
+          fi = factory_info[tid]
+          # 只在有 official_name_en 或原本 name 就是中文時才覆蓋英文名
+          en_name = fi.get('name_en') or ''
+          if en_name and any('\u4e00' <= c <= '\u9fff' for c in (node['name'] or '')):
+            # 原本 name 是中文，嘗試補充英文名
+            node['name'] = en_name
+          # name_zh 固定使用 supply_chain_links 中的名稱（比廠區名更精準）
+
+  except HTTPException:
+    raise
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=f'Database error: {e}')
+
+  # 去重 edges（同 source/target/year 保留 ratio 最大者）
+  edge_map: dict[str, dict] = {}
+  for edge in edges_raw:
+    key = f'{edge["source"]}->{edge["target"]}@{edge["year"]}'
+    if key not in edge_map or (edge['ratio'] or 0) > (edge_map[key]['ratio'] or 0):
+      edge_map[key] = edge
+
+  return {
+    'center': {
+      'name': center_name,
+      'name_zh': center_name,
+      'tax_id': center_tax_id,
+      'type': 'center',
+    },
+    'nodes': list(nodes.values()),
+    'edges': list(edge_map.values()),
+  }
+
+
+# ---------------------------------------------------------------------------
+# GET /api/supply-chain/buyers  — 所有有供應鏈資料的買方（supply_chain_links）
+# ---------------------------------------------------------------------------
+
+@app.get(
+  '/api/supply-chain/buyers',
+  summary='List all buyers with supply chain data',
+  description='回傳所有在 supply_chain_links 表中有供應鏈資料的買方列表（去重）。',
+)
+def get_supply_chain_buyers():
+  """回傳所有有供應鏈資料的買方，含供應商數量。"""
+  try:
+    with get_db() as conn:
+      cur = conn.cursor()
+      cur.execute(
+        """
+        SELECT
+          buyer_name,
+          buyer_tax_id,
+          COUNT(DISTINCT supplier_name) AS supplier_count,
+          MAX(source_year) AS latest_year
+        FROM supply_chain_links
+        WHERE buyer_name IS NOT NULL AND buyer_name != ''
+        GROUP BY buyer_name, buyer_tax_id
+        ORDER BY supplier_count DESC
+        """
+      )
+      rows = cur.fetchall()
+  except HTTPException:
+    raise
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=f'Database error: {e}')
+
+  return {
+    'buyers': [
+      {
+        'name': row['buyer_name'],
+        'tax_id': row['buyer_tax_id'],
+        'supplier_count': row['supplier_count'],
+        'latest_year': row['latest_year'],
+      }
+      for row in rows
+    ]
+  }
+
+
+# ---------------------------------------------------------------------------
 # 搜尋建議（Autocomplete）
 # ---------------------------------------------------------------------------
 
@@ -1551,6 +1873,13 @@ def serve_company_profile(tax_id: str):
   return FileResponse(
     STATIC_DIR / 'company.html',
     headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'},
+  )
+
+@app.get('/supply-chain')
+def serve_supply_chain():
+  return FileResponse(
+    STATIC_DIR / 'supply-chain.html',
+    headers={'Cache-Control': 'no-cache'},
   )
 
 app.mount('/static', StaticFiles(directory=str(STATIC_DIR)), name='static')
