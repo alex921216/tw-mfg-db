@@ -1049,6 +1049,15 @@
           <div id="modalNameEn" class="modal-name-en"></div>
           <div id="modalNameZh" class="modal-name-zh"></div>
           <div id="modalBadges" class="modal-badges"></div>
+          <a id="modalGoogleBtn" href="#" target="_blank" rel="noopener noreferrer" style="
+            display:inline-flex; align-items:center; gap:6px;
+            margin-top:12px; padding:8px 16px;
+            background:#1a73e8; color:white; border-radius:20px;
+            text-decoration:none; font-size:13px; font-weight:500;
+            transition:background 0.2s;
+          " onmouseover="this.style.background='#1558b0'" onmouseout="this.style.background='#1a73e8'">
+            <span style="font-size:15px">&#128269;</span> Search on Google
+          </a>
         </div>
 
         <!-- Contact -->
@@ -1586,6 +1595,10 @@
         document.getElementById('modalNameEn').textContent = nameEn
         document.getElementById('modalNameZh').textContent = nameZh
 
+        // Google search button — use Chinese name for best results
+        const googleQuery = (f0.name_zh || nameZh || nameEn) + ' 電話 聯絡方式'
+        document.getElementById('modalGoogleBtn').href = `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`
+
         // ── Badges ────────────────────────────────────────────
         const badgeItems = []
         const industry = f0.industry_en || (summary.industries && summary.industries[0]) || ''
@@ -1647,9 +1660,15 @@
           )
         }
 
-        const hasContact = address || phone || email || website
+        // Always add Google search link at the end of contact
+        const googleContactUrl = `https://www.google.com/search?q=${encodeURIComponent((f0.name_zh || nameZh || nameEn) + ' 電話 地址 聯絡方式')}`
+        contactLines.push(
+          `<div class="contact-line"><span class="contact-line-icon">&#128269;</span>` +
+          `<a href="${escapeHtml(googleContactUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">Search contact info on Google &rarr;</a></div>`
+        )
+
         document.getElementById('modalContactLines').innerHTML = contactLines.join('')
-        showSection('modalSectionContact', !!hasContact)
+        showSection('modalSectionContact', true)
 
         // ── Company Snapshot ──────────────────────────────────
         // earliest registration date across all factories
