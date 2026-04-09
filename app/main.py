@@ -1214,7 +1214,7 @@ def get_company_profile(
                capital_amount, paid_in_capital, company_setup_date, findbiz_url,
                products_en, products_zh, certifications_en,
                hidden_champion_score, phone, email, website, fax,
-               stock_id, official_name_en, is_listed
+               stock_id, official_name_en, is_listed, company_profile_en
         FROM factories
         WHERE tax_id = ?
         ORDER BY id ASC
@@ -1257,6 +1257,7 @@ def get_company_profile(
           'stock_id': row['stock_id'],
           'official_name_en': row['official_name_en'],
           'is_listed': row['is_listed'] or 0,
+          'company_profile_en': row['company_profile_en'],
         }
         for row in factory_rows
       ]

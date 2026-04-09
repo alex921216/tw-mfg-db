@@ -522,29 +522,20 @@
     .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; }
     .modal-badge-status   { background: #f1f3f4; color: #5f6368; }
 
-    /* Quick Links */
-    .quick-links {
-      display: flex;
-      gap: 8px;
-      margin: 16px 0;
-      flex-wrap: wrap;
-    }
-    .quick-link-btn {
-      flex: 1;
-      min-width: 120px;
-      padding: 10px 12px;
-      border-radius: 8px;
-      text-decoration: none;
-      font-size: 13px;
-      font-weight: 500;
+    /* Google fallback link */
+    .google-fallback {
+      margin-top: 16px;
+      padding-top: 14px;
+      border-top: 1px solid #ebebeb;
+      font-size: 12px;
+      color: var(--text-secondary);
       text-align: center;
-      transition: opacity 0.2s;
-      color: white;
     }
-    .quick-link-btn:hover { opacity: 0.85; }
-    .ql-google  { background: #4285f4; }
-    .ql-maps    { background: #34a853; }
-    .ql-findbiz { background: #5f6368; }
+    .google-fallback a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+    .google-fallback a:hover { text-decoration: underline; }
 
     /* Modal sections */
     .modal-section {
@@ -1075,18 +1066,17 @@
           <div id="modalBadges" class="modal-badges"></div>
         </div>
 
-        <!-- Quick Links (always visible) -->
-        <div class="quick-links">
-          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-google">
-            &#128269; Search on Google
-          </a>
-          <a id="qlMaps" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-maps">
-            &#128205; View on Maps
-          </a>
-          <a id="qlFindbiz" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-findbiz">
-            &#127970; Company Registry
-          </a>
-        </div>
+        <!-- Company Profile (always shown when available) -->
+        <div id="modalProfile" style="
+          display: none;
+          margin: 12px 0 16px;
+          padding: 14px 16px;
+          background: #f8f9fa;
+          border-radius: 8px;
+          font-size: 13px;
+          line-height: 1.7;
+          color: #333;
+        "></div>
 
         <!-- Contact (only shown when phone/email/website exists) -->
         <div class="modal-section" id="modalSectionContact" style="display:none">
@@ -1130,6 +1120,11 @@
           <h3>Factory Locations</h3>
           <div id="modalLocationsText" style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
           <div class="city-chips" id="modalCityChips"></div>
+        </div>
+
+        <!-- Google fallback -->
+        <div class="google-fallback">
+          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">&#128269; Search "<span id="qlGoogleLabel"></span>" on Google</a>
         </div>
       </div>
 
@@ -1623,18 +1618,17 @@
         document.getElementById('modalNameEn').textContent = nameEn
         document.getElementById('modalNameZh').textContent = nameZh
 
-        // ── Quick Links (always visible) ─────────────────────
+        // ── Company Profile ───────────────────────────────────
+        const profile = f0.company_profile_en || ''
+        const profileEl = document.getElementById('modalProfile')
+        profileEl.textContent = profile
+        profileEl.style.display = profile ? 'block' : 'none'
+
+        // ── Google fallback link ──────────────────────────────
         const googleQuery = f0.name_zh || nameZh || nameEn
         document.getElementById('qlGoogle').href =
           `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`
-
-        const addressForMaps = f0.address_zh || f0.address_en || googleQuery
-        document.getElementById('qlMaps').href =
-          `https://www.google.com/maps/search/${encodeURIComponent(addressForMaps)}`
-
-        const rawTaxIdForFindbiz = f0.tax_id || taxId
-        document.getElementById('qlFindbiz').href =
-          `https://findbiz.nat.gov.tw/fts/query/QueryBar/queryInit.do?fhl=zh&queryStr=${encodeURIComponent(rawTaxIdForFindbiz)}`
+        document.getElementById('qlGoogleLabel').textContent = googleQuery
 
         // ── Badges ────────────────────────────────────────────
         const badgeItems = []
