@@ -522,6 +522,30 @@
     .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; }
     .modal-badge-status   { background: #f1f3f4; color: #5f6368; }
 
+    /* Quick Links */
+    .quick-links {
+      display: flex;
+      gap: 8px;
+      margin: 16px 0;
+      flex-wrap: wrap;
+    }
+    .quick-link-btn {
+      flex: 1;
+      min-width: 120px;
+      padding: 10px 12px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-size: 13px;
+      font-weight: 500;
+      text-align: center;
+      transition: opacity 0.2s;
+      color: white;
+    }
+    .quick-link-btn:hover { opacity: 0.85; }
+    .ql-google  { background: #4285f4; }
+    .ql-maps    { background: #34a853; }
+    .ql-findbiz { background: #5f6368; }
+
     /* Modal sections */
     .modal-section {
       margin-top: 0;
@@ -1049,18 +1073,22 @@
           <div id="modalNameEn" class="modal-name-en"></div>
           <div id="modalNameZh" class="modal-name-zh"></div>
           <div id="modalBadges" class="modal-badges"></div>
-          <a id="modalGoogleBtn" href="#" target="_blank" rel="noopener noreferrer" style="
-            display:inline-flex; align-items:center; gap:6px;
-            margin-top:12px; padding:8px 16px;
-            background:#1a73e8; color:white; border-radius:20px;
-            text-decoration:none; font-size:13px; font-weight:500;
-            transition:background 0.2s;
-          " onmouseover="this.style.background='#1558b0'" onmouseout="this.style.background='#1a73e8'">
-            <span style="font-size:15px">&#128269;</span> Search on Google
+        </div>
+
+        <!-- Quick Links (always visible) -->
+        <div class="quick-links">
+          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-google">
+            &#128269; Search on Google
+          </a>
+          <a id="qlMaps" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-maps">
+            &#128205; View on Maps
+          </a>
+          <a id="qlFindbiz" href="#" target="_blank" rel="noopener noreferrer" class="quick-link-btn ql-findbiz">
+            &#127970; Company Registry
           </a>
         </div>
 
-        <!-- Contact -->
+        <!-- Contact (only shown when phone/email/website exists) -->
         <div class="modal-section" id="modalSectionContact" style="display:none">
           <h3>Contact</h3>
           <div class="contact-lines" id="modalContactLines"></div>
@@ -1595,9 +1623,18 @@
         document.getElementById('modalNameEn').textContent = nameEn
         document.getElementById('modalNameZh').textContent = nameZh
 
-        // Google search button — just company name, no extra keywords
+        // ── Quick Links (always visible) ─────────────────────
         const googleQuery = f0.name_zh || nameZh || nameEn
-        document.getElementById('modalGoogleBtn').href = `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`
+        document.getElementById('qlGoogle').href =
+          `https://www.google.com/search?q=${encodeURIComponent(googleQuery)}`
+
+        const addressForMaps = f0.address_zh || f0.address_en || googleQuery
+        document.getElementById('qlMaps').href =
+          `https://www.google.com/maps/search/${encodeURIComponent(addressForMaps)}`
+
+        const rawTaxIdForFindbiz = f0.tax_id || taxId
+        document.getElementById('qlFindbiz').href =
+          `https://findbiz.nat.gov.tw/fts/query/QueryBar/queryInit.do?fhl=zh&queryStr=${encodeURIComponent(rawTaxIdForFindbiz)}`
 
         // ── Badges ────────────────────────────────────────────
         const badgeItems = []
@@ -1631,16 +1668,8 @@
           if (phone && email && website) break
         }
 
-        // always show address from first factory
-        const address = f0.address_zh || ''
+        // Contact section — only phone / email / website (address is in Snapshot)
         const contactLines = []
-        if (address) {
-          const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(address)}`
-          contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">&#128205;</span>` +
-            `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(address)}</a></div>`
-          )
-        }
         if (phone) {
           contactLines.push(
             `<div class="contact-line"><span class="contact-line-icon">&#128222;</span>${escapeHtml(phone)}</div>`
@@ -1660,15 +1689,9 @@
           )
         }
 
-        // Always add Google search link at the end of contact
-        const googleContactUrl = `https://www.google.com/search?q=${encodeURIComponent(f0.name_zh || nameZh || nameEn)}`
-        contactLines.push(
-          `<div class="contact-line"><span class="contact-line-icon">&#128269;</span>` +
-          `<a href="${escapeHtml(googleContactUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary)">Search on Google &rarr;</a></div>`
-        )
-
+        const hasContactInfo = contactLines.length > 0
         document.getElementById('modalContactLines').innerHTML = contactLines.join('')
-        showSection('modalSectionContact', true)
+        showSection('modalSectionContact', hasContactInfo)
 
         // ── Company Snapshot ──────────────────────────────────
         // earliest registration date across all factories
@@ -1702,6 +1725,14 @@
               : '—'
           )
         ])
+        const address = f0.address_zh || f0.address_en || ''
+        if (address) {
+          const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(address)}`
+          snapshotRows.push([
+            'Address',
+            `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(address)}</a>`
+          ])
+        }
 
         document.getElementById('modalSnapshotGrid').innerHTML = snapshotRows.map(([label, val]) =>
           `<span class="snapshot-label">${label}</span><span class="snapshot-value">${val}</span>`
