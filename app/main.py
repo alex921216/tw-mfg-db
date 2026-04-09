@@ -24,15 +24,20 @@ Endpoints:
 
 import csv
 import io
+import os
+import secrets
 import sqlite3
+import time
+from collections import defaultdict
 from contextlib import asynccontextmanager, contextmanager
 from datetime import date
 from pathlib import Path
 from typing import Generator, Optional
 
-from fastapi import FastAPI, HTTPException, Query
+from fastapi import BackgroundTasks, Depends, FastAPI, HTTPException, Query, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, StreamingResponse
+from fastapi.security import APIKeyHeader, APIKeyQuery
 from fastapi.staticfiles import StaticFiles
 
 # ---------------------------------------------------------------------------
@@ -58,6 +63,36 @@ _HIDDEN_CHAMPION_COLUMNS_DDL = """
 ALTER TABLE factories ADD COLUMN hidden_champion_score INTEGER DEFAULT 0;
 ALTER TABLE factories ADD COLUMN hidden_champion_reasons TEXT DEFAULT NULL;
 ALTER TABLE factories ADD COLUMN hidden_champion_updated_at TEXT DEFAULT NULL;
+"""
+
+_API_AUTH_DDL = """
+CREATE TABLE IF NOT EXISTS api_keys (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  key TEXT UNIQUE NOT NULL,
+  name TEXT NOT NULL,
+  email TEXT,
+  tier TEXT DEFAULT 'free',
+  rate_limit_per_minute INTEGER DEFAULT 30,
+  rate_limit_per_day INTEGER DEFAULT 1000,
+  is_active INTEGER DEFAULT 1,
+  created_at TEXT DEFAULT (datetime('now')),
+  expires_at TEXT
+);
+
+CREATE TABLE IF NOT EXISTS api_usage (
+  id INTEGER PRIMARY KEY AUTOINCREMENT,
+  api_key_id INTEGER NOT NULL,
+  endpoint TEXT NOT NULL,
+  method TEXT DEFAULT 'GET',
+  status_code INTEGER,
+  response_time_ms INTEGER,
+  ip_address TEXT,
+  created_at TEXT DEFAULT (datetime('now')),
+  FOREIGN KEY (api_key_id) REFERENCES api_keys(id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_api_usage_key_date ON api_usage(api_key_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_api_keys_key ON api_keys(key);
 """
 
 _NEW_TABLES_DDL = """
@@ -254,10 +289,18 @@ def init_db() -> None:
   conn = sqlite3.connect(str(DB_PATH))
   conn.execute('PRAGMA journal_mode=WAL')
   try:
+    conn.executescript(_API_AUTH_DDL)
     conn.executescript(_NEW_TABLES_DDL)
     _migrate_hidden_champion_columns(conn)
     _migrate_listed_company_columns(conn)
     _migrate_moea_extended_columns(conn)
+    # 建立預設 demo key（前端用）
+    conn.execute(
+      """
+      INSERT OR IGNORE INTO api_keys (key, name, tier, rate_limit_per_minute, rate_limit_per_day)
+      VALUES ('tmdb-demo-2026', 'Demo (Frontend)', 'free', 30, 1000)
+      """
+    )
     conn.commit()
     # 更新 FTS5 統計資料，讓查詢規劃器在大資料量下做出最佳決策
     conn.execute('PRAGMA optimize')
@@ -289,6 +332,156 @@ app.add_middleware(
   allow_methods=['*'],
   allow_headers=['*'],
 )
+
+
+# ---------------------------------------------------------------------------
+# 使用量追蹤 Middleware（異步記錄 /api/* 請求）
+# ---------------------------------------------------------------------------
+
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.responses import Response as StarletteResponse
+
+
+class ApiUsageMiddleware(BaseHTTPMiddleware):
+  async def dispatch(self, request: Request, call_next):
+    start = time.time()
+    response = await call_next(request)
+    elapsed_ms = int((time.time() - start) * 1000)
+
+    # 只記錄 /api/* 路徑（排除 admin 管理 endpoints 自身的記錄，避免遞歸複雜度）
+    path = request.url.path
+    if path.startswith('/api/') and not path.startswith('/api/admin/'):
+      key_info = getattr(request.state, 'api_key_info', None)
+      if key_info:
+        ip = request.client.host if request.client else ''
+        import asyncio
+        loop = asyncio.get_event_loop()
+        loop.run_in_executor(
+          None,
+          _log_usage_sync,
+          key_info['id'],
+          path,
+          request.method,
+          response.status_code,
+          elapsed_ms,
+          ip,
+        )
+
+    return response
+
+
+app.add_middleware(ApiUsageMiddleware)
+
+# ---------------------------------------------------------------------------
+# API Key 認證 & Rate Limiting
+# ---------------------------------------------------------------------------
+
+TMDB_ADMIN_KEY = os.environ.get('TMDB_ADMIN_KEY', '')
+
+_api_key_header = APIKeyHeader(name='X-API-Key', auto_error=False)
+_api_key_query = APIKeyQuery(name='api_key', auto_error=False)
+
+# In-memory rate limit store: {str(api_key_id): [timestamp, ...]}
+_rate_limits: dict[str, list[float]] = defaultdict(list)
+
+
+def _check_rate_limit(api_key_id: int, per_minute: int, per_day: int) -> None:
+  now = time.time()
+  key = str(api_key_id)
+  # 只保留最近 24 小時的記錄
+  _rate_limits[key] = [t for t in _rate_limits[key] if now - t < 86400]
+  recent_minute = sum(1 for t in _rate_limits[key] if now - t < 60)
+  if recent_minute >= per_minute:
+    raise HTTPException(status_code=429, detail='Rate limit exceeded (per minute)')
+  if len(_rate_limits[key]) >= per_day:
+    raise HTTPException(status_code=429, detail='Rate limit exceeded (per day)')
+  _rate_limits[key].append(now)
+
+
+async def verify_api_key(
+  request: Request,
+  header_key: str = Depends(_api_key_header),
+  query_key: str = Depends(_api_key_query),
+) -> dict:
+  """驗證 API key 並回傳 key 記錄 dict（含 id, rate_limit_per_minute, rate_limit_per_day）。
+  同時將 key info 存到 request.state 供 middleware 使用。"""
+  key = header_key or query_key
+  if not key:
+    raise HTTPException(
+      status_code=401,
+      detail={'error': 'API key required. Pass via X-API-Key header or api_key query parameter.'},
+    )
+  if not DB_PATH.exists():
+    raise HTTPException(status_code=500, detail='Database file not found')
+  conn = sqlite3.connect(str(DB_PATH))
+  conn.row_factory = sqlite3.Row
+  try:
+    cur = conn.cursor()
+    cur.execute(
+      """
+      SELECT id, key, name, tier, rate_limit_per_minute, rate_limit_per_day, is_active, expires_at
+      FROM api_keys
+      WHERE key = ?
+      """,
+      (key,),
+    )
+    row = cur.fetchone()
+  finally:
+    conn.close()
+
+  if not row:
+    raise HTTPException(status_code=401, detail={'error': 'Invalid API key'})
+  if not row['is_active']:
+    raise HTTPException(status_code=403, detail={'error': 'API key is inactive'})
+  if row['expires_at']:
+    from datetime import datetime
+    if datetime.utcnow().isoformat() > row['expires_at']:
+      raise HTTPException(status_code=403, detail={'error': 'API key has expired'})
+
+  _check_rate_limit(row['id'], row['rate_limit_per_minute'], row['rate_limit_per_day'])
+
+  key_info = dict(row)
+  request.state.api_key_info = key_info
+  return key_info
+
+
+async def verify_admin_key(
+  header_key: str = Depends(_api_key_header),
+  query_key: str = Depends(_api_key_query),
+) -> None:
+  """驗證管理員 key（從環境變數 TMDB_ADMIN_KEY 讀取）。"""
+  key = header_key or query_key
+  if not key or not TMDB_ADMIN_KEY:
+    raise HTTPException(status_code=401, detail={'error': 'Admin key required'})
+  if key != TMDB_ADMIN_KEY:
+    raise HTTPException(status_code=403, detail={'error': 'Invalid admin key'})
+
+
+def _log_usage_sync(
+  api_key_id: int,
+  endpoint: str,
+  method: str,
+  status_code: int,
+  response_time_ms: int,
+  ip_address: str,
+) -> None:
+  """同步寫入使用量到 DB（由 BackgroundTasks 異步執行）。"""
+  if not DB_PATH.exists():
+    return
+  try:
+    conn = sqlite3.connect(str(DB_PATH))
+    conn.execute(
+      """
+      INSERT INTO api_usage (api_key_id, endpoint, method, status_code, response_time_ms, ip_address)
+      VALUES (?, ?, ?, ?, ?, ?)
+      """,
+      (api_key_id, endpoint, method, status_code, response_time_ms, ip_address),
+    )
+    conn.commit()
+    conn.close()
+  except Exception:
+    pass  # 使用量記錄失敗不應影響主要請求
+
 
 # ---------------------------------------------------------------------------
 # 資料庫連線
@@ -424,6 +617,7 @@ def search_factories(
   page: int = Query(default=1, ge=1, description='頁碼（從 1 開始）'),
   page_size: int = Query(default=20, ge=1, le=100, description='每頁數量（最大 100）'),
   sort: Optional[str] = Query(default=None, description='排序：capital_desc | capital_asc'),
+  _auth: dict = Depends(verify_api_key),
 ):
   offset = (page - 1) * page_size
 
@@ -518,6 +712,7 @@ def export_factories(
   industry: Optional[str] = Query(default=None, description='產業類別英文（精確比對）'),
   city: Optional[str] = Query(default=None, description='縣市英文（精確比對）'),
   sort: Optional[str] = Query(default=None, description='排序：capital_desc | capital_asc'),
+  _auth: dict = Depends(verify_api_key),
 ):
   order_clause = _SORT_ORDER_MAP.get(sort or '', '')
 
@@ -585,7 +780,9 @@ def export_factories(
   summary='Get available filter options',
   description='回傳所有可用的產業類別與縣市選項及各選項的工廠數量。',
 )
-def get_filters():
+def get_filters(
+  _auth: dict = Depends(verify_api_key),
+):
   try:
     with get_db() as conn:
       cur = conn.cursor()
@@ -627,7 +824,9 @@ def get_filters():
   summary='Database statistics',
   description='回傳資料庫整體統計資訊，包含工廠總數、產業數、縣市數、供應鏈連結數、專利數及政府紀錄數。',
 )
-def get_stats():
+def get_stats(
+  _auth: dict = Depends(verify_api_key),
+):
   try:
     with get_db() as conn:
       cur = conn.cursor()
@@ -682,6 +881,7 @@ def get_supply_chain_links(
   direction: str = Query(default='both', description='upstream / downstream / both'),
   page: int = Query(default=1, ge=1, description='頁碼（從 1 開始）'),
   page_size: int = Query(default=20, ge=1, le=100, description='每頁數量（最大 100）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   if direction not in ('upstream', 'downstream', 'both'):
     raise HTTPException(
@@ -790,6 +990,7 @@ def get_patents(
   keyword: Optional[str] = Query(default=None, description='關鍵字搜尋標題（中英文）'),
   page: int = Query(default=1, ge=1, description='頁碼（從 1 開始）'),
   page_size: int = Query(default=20, ge=1, le=100, description='每頁數量（最大 100）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   offset = (page - 1) * page_size
 
@@ -879,6 +1080,7 @@ def get_government_records(
   record_type: Optional[str] = Query(default=None, description='紀錄類型（精確比對）'),
   page: int = Query(default=1, ge=1, description='頁碼（從 1 開始）'),
   page_size: int = Query(default=20, ge=1, le=100, description='每頁數量（最大 100）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   offset = (page - 1) * page_size
 
@@ -962,7 +1164,10 @@ def get_government_records(
   summary='Company profile by Tax ID',
   description='回傳指定統一編號的公司完整 profile，包含所有工廠分廠、供應鏈、專利、政府紀錄及統計摘要。',
 )
-def get_company_profile(tax_id: str):
+def get_company_profile(
+  tax_id: str,
+  _auth: dict = Depends(verify_api_key),
+):
   try:
     with get_db() as conn:
       cur = conn.cursor()
@@ -1144,7 +1349,9 @@ def get_company_profile(tax_id: str):
 # ---------------------------------------------------------------------------
 
 @app.get('/api/supply-chain/list')
-def get_supply_chain_list():
+def get_supply_chain_list(
+  _auth: dict = Depends(verify_api_key),
+):
   try:
     with get_db() as conn:
       cur = conn.cursor()
@@ -1179,6 +1386,7 @@ def get_supply_chain_list():
 @app.get('/api/supply-chain')
 def get_supply_chain_by_buyer(
   buyer: str = Query(..., description='買方公司名稱（如：台積電）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   try:
     with get_db() as conn:
@@ -1281,7 +1489,10 @@ def get_supply_chain_by_buyer(
 # ---------------------------------------------------------------------------
 
 @app.get('/api/factory/{factory_id}/supply-chain-tags')
-def get_factory_supply_chain_tags(factory_id: int):
+def get_factory_supply_chain_tags(
+  factory_id: int,
+  _auth: dict = Depends(verify_api_key),
+):
   try:
     with get_db() as conn:
       cur = conn.cursor()
@@ -1331,6 +1542,7 @@ def get_hidden_champions(
   industry: Optional[str] = Query(default=None, description='產業類別英文（精確比對）'),
   page: int = Query(default=1, ge=1, description='頁碼（從 1 開始）'),
   page_size: int = Query(default=20, ge=1, le=100, description='每頁數量（最大 100）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   """
   回傳隱形冠軍工廠清單，按 hidden_champion_score 降序。
@@ -1425,6 +1637,7 @@ def get_hidden_champions(
 def get_supply_chain_graph(
   company: str = Query(..., description='公司名稱或統一編號'),
   depth: int = Query(default=1, ge=1, le=3, description='展開深度（1=直接上下游，2=二度關係，3=三度關係）'),
+  _auth: dict = Depends(verify_api_key),
 ):
   """
   以指定公司為中心，回傳 depth 層供應鏈關係圖。
@@ -1696,7 +1909,9 @@ def get_supply_chain_graph(
   summary='List all buyers with supply chain data',
   description='回傳所有在 supply_chain_links 表中有供應鏈資料的買方列表（去重）。',
 )
-def get_supply_chain_buyers():
+def get_supply_chain_buyers(
+  _auth: dict = Depends(verify_api_key),
+):
   """回傳所有有供應鏈資料的買方，含供應商數量。"""
   try:
     with get_db() as conn:
@@ -1745,6 +1960,7 @@ def get_supply_chain_buyers():
 def get_suggestions(
   q: str = Query(default='', description='搜尋關鍵詞（至少 2 個字元）'),
   limit: int = Query(default=8, ge=1, le=20, description='最多回傳筆數'),
+  _auth: dict = Depends(verify_api_key),
 ):
   """
   回傳搜尋建議，來源：industry_en、products_en、city_en、公司名稱。
@@ -1853,6 +2069,153 @@ def get_suggestions(
   # 依 count 降序，截取 limit 筆
   suggestions.sort(key=lambda x: x['count'], reverse=True)
   return {'suggestions': suggestions[:limit]}
+
+
+# ---------------------------------------------------------------------------
+# Admin Endpoints（需要 TMDB_ADMIN_KEY 環境變數認證）
+# ---------------------------------------------------------------------------
+
+@app.post('/api/admin/keys', summary='Create API key')
+def admin_create_key(
+  name: str = Query(..., description='客戶名稱'),
+  email: Optional[str] = Query(default=None, description='聯絡 email'),
+  tier: str = Query(default='free', description='free / pro / enterprise'),
+  rate_limit_per_minute: int = Query(default=30, ge=1, description='每分鐘請求上限'),
+  rate_limit_per_day: int = Query(default=1000, ge=1, description='每天請求上限'),
+  expires_at: Optional[str] = Query(default=None, description='過期時間（ISO 8601，NULL = 永不過期）'),
+  _admin: None = Depends(verify_admin_key),
+):
+  new_key = f'tmdb-{secrets.token_urlsafe(16)}'
+  with get_db() as conn:
+    conn.execute(
+      """
+      INSERT INTO api_keys (key, name, email, tier, rate_limit_per_minute, rate_limit_per_day, expires_at)
+      VALUES (?, ?, ?, ?, ?, ?, ?)
+      """,
+      (new_key, name, email, tier, rate_limit_per_minute, rate_limit_per_day, expires_at),
+    )
+    conn.commit()
+    cur = conn.cursor()
+    cur.execute('SELECT * FROM api_keys WHERE key = ?', (new_key,))
+    row = cur.fetchone()
+  return {
+    'id': row['id'],
+    'key': row['key'],
+    'name': row['name'],
+    'email': row['email'],
+    'tier': row['tier'],
+    'rate_limit_per_minute': row['rate_limit_per_minute'],
+    'rate_limit_per_day': row['rate_limit_per_day'],
+    'is_active': row['is_active'],
+    'created_at': row['created_at'],
+    'expires_at': row['expires_at'],
+  }
+
+
+@app.get('/api/admin/keys', summary='List all API keys')
+def admin_list_keys(
+  _admin: None = Depends(verify_admin_key),
+):
+  with get_db() as conn:
+    cur = conn.cursor()
+    cur.execute(
+      'SELECT id, key, name, email, tier, rate_limit_per_minute, rate_limit_per_day, is_active, created_at, expires_at FROM api_keys ORDER BY created_at DESC'
+    )
+    rows = cur.fetchall()
+  return {
+    'keys': [
+      {
+        'id': row['id'],
+        'key': row['key'],
+        'name': row['name'],
+        'email': row['email'],
+        'tier': row['tier'],
+        'rate_limit_per_minute': row['rate_limit_per_minute'],
+        'rate_limit_per_day': row['rate_limit_per_day'],
+        'is_active': row['is_active'],
+        'created_at': row['created_at'],
+        'expires_at': row['expires_at'],
+      }
+      for row in rows
+    ]
+  }
+
+
+@app.get('/api/admin/usage', summary='API usage statistics')
+def admin_get_usage(
+  key_id: Optional[int] = Query(default=None, description='指定 API key ID（不填則查全部）'),
+  limit: int = Query(default=100, ge=1, le=1000, description='回傳筆數上限'),
+  _admin: None = Depends(verify_admin_key),
+):
+  with get_db() as conn:
+    cur = conn.cursor()
+    if key_id:
+      cur.execute(
+        """
+        SELECT u.id, u.api_key_id, k.name AS key_name, u.endpoint, u.method,
+               u.status_code, u.response_time_ms, u.ip_address, u.created_at
+        FROM api_usage u
+        JOIN api_keys k ON k.id = u.api_key_id
+        WHERE u.api_key_id = ?
+        ORDER BY u.created_at DESC
+        LIMIT ?
+        """,
+        (key_id, limit),
+      )
+    else:
+      cur.execute(
+        """
+        SELECT u.id, u.api_key_id, k.name AS key_name, u.endpoint, u.method,
+               u.status_code, u.response_time_ms, u.ip_address, u.created_at
+        FROM api_usage u
+        JOIN api_keys k ON k.id = u.api_key_id
+        ORDER BY u.created_at DESC
+        LIMIT ?
+        """,
+        (limit,),
+      )
+    rows = cur.fetchall()
+
+    # 統計摘要（各 key 的總請求數）
+    cur.execute(
+      """
+      SELECT k.id, k.name, COUNT(u.id) AS total_requests,
+             SUM(CASE WHEN u.status_code = 200 THEN 1 ELSE 0 END) AS success_count,
+             AVG(u.response_time_ms) AS avg_response_ms
+      FROM api_keys k
+      LEFT JOIN api_usage u ON u.api_key_id = k.id
+      GROUP BY k.id, k.name
+      ORDER BY total_requests DESC
+      """
+    )
+    summary_rows = cur.fetchall()
+
+  return {
+    'summary': [
+      {
+        'key_id': row['id'],
+        'key_name': row['name'],
+        'total_requests': row['total_requests'],
+        'success_count': row['success_count'],
+        'avg_response_ms': round(row['avg_response_ms'] or 0, 1),
+      }
+      for row in summary_rows
+    ],
+    'recent': [
+      {
+        'id': row['id'],
+        'api_key_id': row['api_key_id'],
+        'key_name': row['key_name'],
+        'endpoint': row['endpoint'],
+        'method': row['method'],
+        'status_code': row['status_code'],
+        'response_time_ms': row['response_time_ms'],
+        'ip_address': row['ip_address'],
+        'created_at': row['created_at'],
+      }
+      for row in rows
+    ],
+  }
 
 
 # ---------------------------------------------------------------------------

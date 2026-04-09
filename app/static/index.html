@@ -1200,6 +1200,7 @@
     const PAGE_SIZE = 20
     const DEBOUNCE_MS = 300
     const API_BASE = ''  // same-origin; override for dev: 'http://localhost:8000'
+    const API_KEY = 'tmdb-demo-2026'
 
     // ── State ──────────────────────────────────────────────────
     const state = {
@@ -1339,7 +1340,7 @@
 
     // ── API Calls ──────────────────────────────────────────────
     async function fetchJson(url) {
-      const res = await fetch(url)
+      const res = await fetch(url, { headers: { 'X-API-Key': API_KEY } })
       if (!res.ok) throw new Error(`HTTP ${res.status}: ${res.statusText}`)
       return res.json()
     }
@@ -1621,15 +1622,24 @@
     }
 
     // ── Export ─────────────────────────────────────────────────
-    function triggerExport() {
+    async function triggerExport() {
       const params = buildParams()
       const url = `${API_BASE}/api/export?${params}`
-      const a = document.createElement('a')
-      a.href = url
-      a.download = 'tmdb-export.csv'
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
+      try {
+        const res = await fetch(url, { headers: { 'X-API-Key': API_KEY } })
+        if (!res.ok) throw new Error(`HTTP ${res.status}`)
+        const blob = await res.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        const a = document.createElement('a')
+        a.href = blobUrl
+        a.download = 'tmdb-export.csv'
+        document.body.appendChild(a)
+        a.click()
+        document.body.removeChild(a)
+        URL.revokeObjectURL(blobUrl)
+      } catch (err) {
+        console.error('Export failed:', err)
+      }
     }
 
     // ── Company Profile Sidebar ────────────────────────────────
@@ -1952,7 +1962,7 @@
         return
       }
       try {
-        const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(q)}&limit=8`)
+        const res = await fetch(`${API_BASE}/api/suggest?q=${encodeURIComponent(q)}&limit=8`, { headers: { 'X-API-Key': API_KEY } })
         if (!res.ok) { closeSuggest(); return }
         const data = await res.json()
         renderSuggestions(data.suggestions || [])

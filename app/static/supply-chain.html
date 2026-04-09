@@ -522,6 +522,7 @@
     'use strict'
 
     const API_BASE = ''
+    const API_KEY = 'tmdb-demo-2026'
 
     // ── DOM refs ────────────────────────────────────────────────────
     const scInput = document.getElementById('scInput')
@@ -546,7 +547,7 @@
 
     // ── Fetch helper ────────────────────────────────────────────────
     async function fetchJson(url) {
-      const res = await fetch(url)
+      const res = await fetch(url, { headers: { 'X-API-Key': API_KEY } })
       if (!res.ok) throw new Error(`HTTP ${res.status}`)
       return res.json()
     }

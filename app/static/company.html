@@ -564,6 +564,8 @@
   <script>
     'use strict'
 
+    const API_KEY = 'tmdb-demo-2026'
+
     // ── Utilities ─────────────────────────────────────────────────────────────
 
     function escapeHtml(str) {
@@ -918,7 +920,7 @@
       }
 
       try {
-        const res = await fetch(`/api/company/${encodeURIComponent(currentTaxId)}`)
+        const res = await fetch(`/api/company/${encodeURIComponent(currentTaxId)}`, { headers: { 'X-API-Key': API_KEY } })
 
         if (!res.ok) {
           if (res.status === 404) {
