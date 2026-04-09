@@ -1570,9 +1570,10 @@
             </tr>`
           : ''
 
-        // ISSUE-006: company name click expands Contact Info; fall back to plain text if no contact info
-        const nameInner = contactPanelItems.length > 0
-          ? `<button class="company-name-en company-link" onclick="toggleContact('${rowId}')" style="background:none;border:none;padding:0;font-size:inherit;font-family:inherit;">${displayNameEn}</button>${listedBadge}`
+        // ISSUE-006: company name click opens Profile page in new tab; Contact Info toggle preserved via button
+        const profileHref = rawTaxId ? `/company/${encodeURIComponent(rawTaxId)}` : null
+        const nameInner = profileHref
+          ? `<a class="company-name-en company-link" href="${profileHref}" target="_blank" rel="noopener noreferrer">${displayNameEn}</a>${listedBadge}`
           : `<span class="company-name-en">${displayNameEn}</span>${listedBadge}`
 
         // ISSUE-004: show phone and website inline under company name
@@ -1588,7 +1589,6 @@
           <td>
             <div style="display:flex;align-items:baseline;gap:6px;flex-wrap:wrap;">
               ${nameInner}
-              ${profileBtn}
               ${contactPanelItems.length > 0 ? contactBtn : ''}
             </div>
             ${nameZh ? `<div class="company-name-zh">${nameZh}</div>` : ''}

@@ -410,7 +410,11 @@ _SORT_ORDER_MAP: dict[str, str] = {
 }
 
 
-@app.get('/api/search')
+@app.get(
+  '/api/search',
+  summary='Search factories',
+  description='全文搜尋工廠資料，支援關鍵字、產業、縣市篩選及分頁。',
+)
 def search_factories(
   q: Optional[str] = Query(default=None, description='全文搜尋關鍵字'),
   industry: Optional[str] = Query(default=None, description='產業類別英文（精確比對）'),
@@ -502,7 +506,11 @@ def search_factories(
 # GET /api/export
 # ---------------------------------------------------------------------------
 
-@app.get('/api/export')
+@app.get(
+  '/api/export',
+  summary='Export search results as CSV',
+  description='將搜尋結果匯出為 CSV 檔案下載，支援與 /api/search 相同的篩選條件。',
+)
 def export_factories(
   q: Optional[str] = Query(default=None, description='全文搜尋關鍵字'),
   industry: Optional[str] = Query(default=None, description='產業類別英文（精確比對）'),
@@ -570,7 +578,11 @@ def export_factories(
 # GET /api/filters
 # ---------------------------------------------------------------------------
 
-@app.get('/api/filters')
+@app.get(
+  '/api/filters',
+  summary='Get available filter options',
+  description='回傳所有可用的產業類別與縣市選項及各選項的工廠數量。',
+)
 def get_filters():
   try:
     with get_db() as conn:
@@ -608,7 +620,11 @@ def get_filters():
 # GET /api/stats
 # ---------------------------------------------------------------------------
 
-@app.get('/api/stats')
+@app.get(
+  '/api/stats',
+  summary='Database statistics',
+  description='回傳資料庫整體統計資訊，包含工廠總數、產業數、縣市數、供應鏈連結數、專利數及政府紀錄數。',
+)
 def get_stats():
   try:
     with get_db() as conn:
@@ -654,7 +670,11 @@ def get_stats():
 # GET /api/supply-chain-links  — 查詢 supply_chain_links 資料表（財報來源）
 # ---------------------------------------------------------------------------
 
-@app.get('/api/supply-chain-links')
+@app.get(
+  '/api/supply-chain-links',
+  summary='Query supply chain relationships',
+  description='查詢財報來源的供應鏈關係，支援公司名稱或統一編號搜尋。',
+)
 def get_supply_chain_links(
   company: str = Query(..., description='公司名稱或統一編號'),
   direction: str = Query(default='both', description='upstream / downstream / both'),
@@ -757,7 +777,11 @@ def get_supply_chain_links(
 # GET /api/patents
 # ---------------------------------------------------------------------------
 
-@app.get('/api/patents')
+@app.get(
+  '/api/patents',
+  summary='Search patents',
+  description='搜尋專利資料，支援申請人名稱、技術分類及關鍵字篩選。',
+)
 def get_patents(
   applicant: Optional[str] = Query(default=None, description='申請人名稱（部分比對）'),
   ipc: Optional[str] = Query(default=None, description='技術分類碼（對應 tech_category 欄位）'),
@@ -843,7 +867,11 @@ def get_patents(
 # GET /api/government-records
 # ---------------------------------------------------------------------------
 
-@app.get('/api/government-records')
+@app.get(
+  '/api/government-records',
+  summary='Government records',
+  description='查詢政府紀錄（獎項、認定、補助等），支援公司名稱或統一編號及紀錄類型篩選。',
+)
 def get_government_records(
   company: Optional[str] = Query(default=None, description='公司名稱、統一編號、獎項名稱、或關鍵字'),
   record_type: Optional[str] = Query(default=None, description='紀錄類型（精確比對）'),
@@ -927,25 +955,31 @@ def get_government_records(
 # GET /api/company/{tax_id}
 # ---------------------------------------------------------------------------
 
-@app.get('/api/company/{tax_id}')
+@app.get(
+  '/api/company/{tax_id}',
+  summary='Company profile by Tax ID',
+  description='回傳指定統一編號的公司完整 profile，包含所有工廠分廠、供應鏈、專利、政府紀錄及統計摘要。',
+)
 def get_company_profile(tax_id: str):
   try:
     with get_db() as conn:
       cur = conn.cursor()
 
-      # 工廠基本資料
+      # 所有工廠分廠資料（同一 tax_id 可能有多廠）
       cur.execute("""
         SELECT id, tax_id, name_en, name_zh, industry_en, industry_zh,
                city_en, district_en, address_zh, registration_date,
                capital_amount, paid_in_capital, company_setup_date, findbiz_url,
-               products_en, products_zh, certifications_en
+               products_en, products_zh, certifications_en,
+               hidden_champion_score, phone, email, website, fax,
+               stock_id, official_name_en, is_listed
         FROM factories
         WHERE tax_id = ?
-        LIMIT 1
+        ORDER BY id ASC
       """, [tax_id])
-      factory_row = cur.fetchone()
+      factory_rows = cur.fetchall()
 
-      if factory_row is None:
+      if not factory_rows:
         raise HTTPException(status_code=404, detail={
           'error': {
             'code': 'NOT_FOUND',
@@ -954,25 +988,47 @@ def get_company_profile(tax_id: str):
           }
         })
 
-      factory = {
-        'id': factory_row['id'],
-        'tax_id': factory_row['tax_id'],
-        'name_en': factory_row['name_en'],
-        'name_zh': factory_row['name_zh'],
-        'industry_en': factory_row['industry_en'],
-        'industry_zh': factory_row['industry_zh'],
-        'city_en': factory_row['city_en'],
-        'district_en': factory_row['district_en'],
-        'address_zh': factory_row['address_zh'],
-        'registration_date': factory_row['registration_date'],
-        'capital_amount': factory_row['capital_amount'],
-        'paid_in_capital': factory_row['paid_in_capital'],
-        'company_setup_date': factory_row['company_setup_date'],
-        'findbiz_url': factory_row['findbiz_url'],
-        'products_en': factory_row['products_en'],
-        'products_zh': factory_row['products_zh'],
-        'certifications_en': factory_row['certifications_en'],
-      }
+      factories = [
+        {
+          'id': row['id'],
+          'tax_id': row['tax_id'],
+          'name_en': row['name_en'],
+          'name_zh': row['name_zh'],
+          'industry_en': row['industry_en'],
+          'industry_zh': row['industry_zh'],
+          'city_en': row['city_en'],
+          'district_en': row['district_en'],
+          'address_zh': row['address_zh'],
+          'registration_date': row['registration_date'],
+          'capital_amount': row['capital_amount'],
+          'paid_in_capital': row['paid_in_capital'],
+          'company_setup_date': row['company_setup_date'],
+          'findbiz_url': row['findbiz_url'],
+          'products_en': row['products_en'],
+          'products_zh': row['products_zh'],
+          'certifications_en': row['certifications_en'],
+          'hidden_champion_score': row['hidden_champion_score'] or 0,
+          'phone': row['phone'],
+          'email': row['email'],
+          'website': row['website'],
+          'fax': row['fax'],
+          'stock_id': row['stock_id'],
+          'official_name_en': row['official_name_en'],
+          'is_listed': row['is_listed'] or 0,
+        }
+        for row in factory_rows
+      ]
+
+      # 統計摘要
+      industries_set = sorted({f['industry_en'] for f in factories if f['industry_en']})
+      cities_set = sorted({f['city_en'] for f in factories if f['city_en']})
+
+      # 供應鏈總筆數（用於 summary）
+      cur.execute("""
+        SELECT COUNT(*) AS cnt FROM supply_chain_links
+        WHERE buyer_tax_id = ? OR supplier_tax_id = ?
+      """, [tax_id, tax_id])
+      total_supply_chain_links = cur.fetchone()['cnt']
 
       # 供應鏈（最近 50 筆）
       cur.execute("""
@@ -999,6 +1055,12 @@ def get_company_profile(tax_id: str):
         for row in cur.fetchall()
       ]
 
+      # 專利總筆數（用於 summary）
+      cur.execute("""
+        SELECT COUNT(*) AS cnt FROM patents WHERE applicant_tax_id = ?
+      """, [tax_id])
+      total_patents = cur.fetchone()['cnt']
+
       # 專利（最近 50 筆）
       cur.execute("""
         SELECT id, patent_number, application_number, title_zh, title_en,
@@ -1022,6 +1084,12 @@ def get_company_profile(tax_id: str):
         }
         for row in cur.fetchall()
       ]
+
+      # 政府紀錄總筆數（用於 summary）
+      cur.execute("""
+        SELECT COUNT(*) AS cnt FROM government_records WHERE company_tax_id = ?
+      """, [tax_id])
+      total_government_records = cur.fetchone()['cnt']
 
       # 政府紀錄（最近 50 筆）
       cur.execute("""
@@ -1055,7 +1123,15 @@ def get_company_profile(tax_id: str):
     raise HTTPException(status_code=500, detail=f'Database error: {e}')
 
   return {
-    'factory': factory,
+    'factories': factories,
+    'summary': {
+      'total_factories': len(factories),
+      'total_patents': total_patents,
+      'total_supply_chain_links': total_supply_chain_links,
+      'total_government_records': total_government_records,
+      'industries': industries_set,
+      'cities': cities_set,
+    },
     'supply_chain': supply_chain,
     'patents': patents,
     'government_records': government_records,
@@ -1243,7 +1319,11 @@ def get_factory_supply_chain_tags(factory_id: int):
 import json as _json
 
 
-@app.get('/api/hidden-champions')
+@app.get(
+  '/api/hidden-champions',
+  summary='List hidden champion companies',
+  description='回傳隱形冠軍工廠清單，按 hidden_champion_score 降序，支援最低分數門檻及產業篩選。',
+)
 def get_hidden_champions(
   min_score: int = Query(default=1, ge=0, le=100, description='最低分數門檻（預設 1）'),
   industry: Optional[str] = Query(default=None, description='產業類別英文（精確比對）'),
@@ -1335,7 +1415,11 @@ def get_hidden_champions(
 # 搜尋建議（Autocomplete）
 # ---------------------------------------------------------------------------
 
-@app.get('/api/suggest')
+@app.get(
+  '/api/suggest',
+  summary='Search autocomplete suggestions',
+  description='回傳搜尋框自動完成建議，來源包含產業類別、縣市、公司名稱及產品關鍵字。',
+)
 def get_suggestions(
   q: str = Query(default='', description='搜尋關鍵詞（至少 2 個字元）'),
   limit: int = Query(default=8, ge=1, le=20, description='最多回傳筆數'),
@@ -1459,6 +1543,13 @@ STATIC_DIR = APP_DIR / 'static'
 def serve_index():
   return FileResponse(
     STATIC_DIR / 'index.html',
+    headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'},
+  )
+
+@app.get('/company/{tax_id}')
+def serve_company_profile(tax_id: str):
+  return FileResponse(
+    STATIC_DIR / 'company.html',
     headers={'Cache-Control': 'no-cache, no-store, must-revalidate', 'Pragma': 'no-cache'},
   )
 

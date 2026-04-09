@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Company Profile — Taiwan Manufacturing Database</title>
+  <style>
+    *, *::before, *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      --bg: #f8f9fa;
+      --surface: #ffffff;
+      --primary: #1a73e8;
+      --primary-hover: #1558b0;
+      --text: #202124;
+      --text-secondary: #5f6368;
+      --border: #dadce0;
+      --border-hover: #bdc1c6;
+      --danger: #d93025;
+      --success: #1e8e3e;
+      --row-hover: #f1f3f4;
+      --shadow: 0 1px 3px rgba(60,64,67,0.15), 0 2px 6px rgba(60,64,67,0.1);
+      --radius: 8px;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.5;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* ── Header ── */
+    .header {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 24px;
+    }
+
+    .header-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--primary);
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .back-link:hover {
+      text-decoration: underline;
+    }
+
+    .header-brand {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      white-space: nowrap;
+    }
+
+    /* ── Main ── */
+    .main {
+      flex: 1;
+      max-width: 1100px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 24px;
+    }
+
+    /* ── Hero Section ── */
+    .hero {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      padding: 24px 28px;
+      margin-bottom: 20px;
+    }
+
+    .hero-name-en {
+      font-size: 22px;
+      font-weight: 600;
+      color: var(--text);
+      letter-spacing: -0.3px;
+      line-height: 1.3;
+    }
+
+    .hero-name-zh {
+      font-size: 15px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    .hero-meta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 12px;
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .hero-meta .dot {
+      width: 3px;
+      height: 3px;
+      background: var(--border-hover);
+      border-radius: 50%;
+      flex-shrink: 0;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      border-radius: 4px;
+      padding: 2px 7px;
+    }
+
+    .badge-success {
+      background: #e6f4ea;
+      color: var(--success);
+      border: 1px solid #b7dfbd;
+    }
+
+    .badge-neutral {
+      background: #f1f3f4;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
+    }
+
+    .badge-listed {
+      background: #e8f0fe;
+      color: var(--primary);
+      border: 1px solid #c5d5f8;
+    }
+
+    .hero-links {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-top: 14px;
+      font-size: 13px;
+    }
+
+    .hero-links a {
+      color: var(--primary);
+      text-decoration: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-links a:hover {
+      text-decoration: underline;
+    }
+
+    .hero-links span {
+      color: var(--text-secondary);
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .hero-tax-id {
+      font-size: 12px;
+      color: var(--text-secondary);
+      background: #f1f3f4;
+      border-radius: 4px;
+      padding: 2px 8px;
+      margin-left: 4px;
+    }
+
+    /* ── Tabs ── */
+    .tab-bar {
+      display: flex;
+      gap: 0;
+      border-bottom: 1px solid var(--border);
+      background: var(--surface);
+      border-radius: var(--radius) var(--radius) 0 0;
+      border: 1px solid var(--border);
+      border-bottom: none;
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .tab-btn {
+      padding: 12px 20px;
+      font-size: 13px;
+      font-weight: 500;
+      font-family: inherit;
+      color: var(--text-secondary);
+      background: none;
+      border: none;
+      border-bottom: 2px solid transparent;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: color 0.15s, border-color 0.15s;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .tab-btn:hover {
+      color: var(--text);
+      background: var(--row-hover);
+    }
+
+    .tab-btn.active {
+      color: var(--primary);
+      border-bottom-color: var(--primary);
+      background: none;
+    }
+
+    .tab-count {
+      font-size: 11px;
+      font-weight: 600;
+      background: #e8f0fe;
+      color: var(--primary);
+      border-radius: 10px;
+      padding: 1px 6px;
+    }
+
+    .tab-count.zero {
+      background: #f1f3f4;
+      color: var(--text-secondary);
+    }
+
+    /* ── Tab Content ── */
+    .tab-content-wrapper {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-top: none;
+      border-radius: 0 0 var(--radius) var(--radius);
+      box-shadow: var(--shadow);
+      min-height: 240px;
+    }
+
+    .tab-panel {
+      display: none;
+      padding: 24px;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    /* ── Info Grid (Overview) ── */
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+
+    .info-item {
+      padding: 14px 16px;
+      background: #fafafa;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+    }
+
+    .info-item-label {
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 4px;
+    }
+
+    .info-item-value {
+      font-size: 13px;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .info-item-value a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+
+    .info-item-value a:hover {
+      text-decoration: underline;
+    }
+
+    /* ── Score Bar ── */
+    .score-section {
+      margin-top: 20px;
+    }
+
+    .score-label {
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .score-label span {
+      font-size: 18px;
+      font-weight: 700;
+      color: var(--primary);
+    }
+
+    .score-bar-bg {
+      height: 10px;
+      background: #e8f0fe;
+      border-radius: 5px;
+      overflow: hidden;
+    }
+
+    .score-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #1a73e8, #34a853);
+      border-radius: 5px;
+      transition: width 0.6s ease;
+    }
+
+    /* ── Table (Factories etc.) ── */
+    .data-table-wrapper {
+      overflow-x: auto;
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .data-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+    }
+
+    .data-table thead th {
+      padding: 10px 14px;
+      text-align: left;
+      font-size: 11px;
+      font-weight: 600;
+      color: var(--text-secondary);
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+      background: #fafafa;
+    }
+
+    .data-table tbody tr {
+      transition: background 0.1s;
+    }
+
+    .data-table tbody tr:hover {
+      background: var(--row-hover);
+    }
+
+    .data-table tbody tr + tr {
+      border-top: 1px solid var(--border);
+    }
+
+    .data-table tbody td {
+      padding: 11px 14px;
+      vertical-align: middle;
+      color: var(--text);
+    }
+
+    /* ── Empty / Loading / Error States ── */
+    .state-box {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 24px;
+      gap: 10px;
+      text-align: center;
+    }
+
+    .state-icon {
+      font-size: 32px;
+    }
+
+    .state-title {
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    .state-subtitle {
+      font-size: 13px;
+      color: var(--text-secondary);
+    }
+
+    .spinner {
+      width: 32px;
+      height: 32px;
+      border: 3px solid var(--border);
+      border-top-color: var(--primary);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+
+    /* ── Footer ── */
+    .footer {
+      padding: 16px 24px;
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-secondary);
+      border-top: 1px solid var(--border);
+      background: var(--surface);
+      margin-top: auto;
+    }
+
+    /* ── Responsive ── */
+    @media (max-width: 640px) {
+      .main {
+        padding: 16px;
+      }
+
+      .hero {
+        padding: 18px;
+      }
+
+      .hero-name-en {
+        font-size: 18px;
+      }
+
+      .tab-btn {
+        padding: 10px 14px;
+        font-size: 12px;
+      }
+
+      .tab-panel {
+        padding: 16px;
+      }
+
+      .info-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <header class="header">
+    <div class="header-inner">
+      <a class="back-link" href="/">&#8592; Back to Search</a>
+      <span class="header-brand">Taiwan Mfg Database</span>
+    </div>
+  </header>
+
+  <main class="main" id="main">
+    <!-- Loading state shown initially -->
+    <div id="loading-state" class="state-box">
+      <div class="spinner"></div>
+      <p class="state-subtitle">Loading company data…</p>
+    </div>
+
+    <!-- Error state (hidden until needed) -->
+    <div id="error-state" class="state-box" style="display:none;">
+      <div class="state-icon">&#9888;</div>
+      <p class="state-title" id="error-title">Unable to load company data</p>
+      <p class="state-subtitle" id="error-subtitle">Please try again later.</p>
+    </div>
+
+    <!-- Profile content (hidden until loaded) -->
+    <div id="profile-content" style="display:none;">
+
+      <!-- Hero -->
+      <div class="hero">
+        <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;">
+          <div style="flex:1;min-width:0;">
+            <h1 class="hero-name-en" id="hero-name-en">—</h1>
+            <p class="hero-name-zh" id="hero-name-zh" style="display:none;"></p>
+          </div>
+          <div id="hero-tax-badge"></div>
+        </div>
+        <div class="hero-meta" id="hero-meta"></div>
+        <div class="hero-links" id="hero-links"></div>
+      </div>
+
+      <!-- Tabs -->
+      <div class="tab-bar" role="tablist">
+        <button class="tab-btn active" role="tab" aria-selected="true" data-tab="overview">Overview</button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="factories">
+          Factories <span class="tab-count zero" id="tab-count-factories">0</span>
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="supply-chain">
+          Supply Chain <span class="tab-count zero" id="tab-count-supply">0</span>
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="patents">
+          Patents <span class="tab-count zero" id="tab-count-patents">0</span>
+        </button>
+        <button class="tab-btn" role="tab" aria-selected="false" data-tab="gov-records">
+          Gov Records <span class="tab-count zero" id="tab-count-gov">0</span>
+        </button>
+      </div>
+
+      <div class="tab-content-wrapper">
+
+        <!-- Overview Panel -->
+        <div class="tab-panel active" id="panel-overview">
+          <div class="info-grid" id="overview-grid"></div>
+          <div id="score-container" style="display:none;" class="score-section">
+            <div class="score-label">
+              Hidden Champion Score
+              <span id="score-value"></span>
+            </div>
+            <div class="score-bar-bg">
+              <div class="score-bar-fill" id="score-bar" style="width:0%"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Factories Panel -->
+        <div class="tab-panel" id="panel-factories">
+          <div id="factories-content"></div>
+        </div>
+
+        <!-- Supply Chain Panel -->
+        <div class="tab-panel" id="panel-supply-chain">
+          <div id="supply-chain-content"></div>
+        </div>
+
+        <!-- Patents Panel -->
+        <div class="tab-panel" id="panel-patents">
+          <div id="patents-content"></div>
+        </div>
+
+        <!-- Gov Records Panel -->
+        <div class="tab-panel" id="panel-gov-records">
+          <div id="gov-records-content"></div>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <footer class="footer">
+    Taiwan Manufacturing Database (TMDB) &mdash; Data for research purposes
+  </footer>
+
+  <script>
+    'use strict'
+
+    // ── Utilities ─────────────────────────────────────────────────────────────
+
+    function escapeHtml(str) {
+      if (str == null) return ''
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;')
+    }
+
+    function formatCapital(amount) {
+      if (!amount) return '—'
+      if (amount >= 1e9) return 'NT$ ' + (amount / 1e9).toFixed(1) + 'B'
+      if (amount >= 1e6) return 'NT$ ' + (amount / 1e6).toFixed(1) + 'M'
+      return 'NT$ ' + Number(amount).toLocaleString()
+    }
+
+    function formatDate(dateStr) {
+      if (!dateStr) return '—'
+      return dateStr.slice(0, 10)
+    }
+
+    function truncate(str, max) {
+      if (!str) return '—'
+      return str.length > max ? str.slice(0, max) + '…' : str
+    }
+
+    function emptyState(message) {
+      return `<div class="state-box">
+        <div class="state-icon">&#128196;</div>
+        <p class="state-title">${escapeHtml(message)}</p>
+      </div>`
+    }
+
+    // ── Tab Logic ─────────────────────────────────────────────────────────────
+
+    const tabBtns = document.querySelectorAll('.tab-btn')
+    const tabPanels = document.querySelectorAll('.tab-panel')
+
+    tabBtns.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const target = btn.dataset.tab
+        tabBtns.forEach(b => {
+          b.classList.toggle('active', b.dataset.tab === target)
+          b.setAttribute('aria-selected', b.dataset.tab === target ? 'true' : 'false')
+        })
+        tabPanels.forEach(panel => {
+          const panelId = 'panel-' + target
+          panel.classList.toggle('active', panel.id === panelId)
+        })
+      })
+    })
+
+    // ── Render Functions ──────────────────────────────────────────────────────
+
+    function renderHero(data) {
+      const factories = data.factories || []
+      const primary = factories[0] || {}
+      const summary = data.summary || {}
+
+      // Name
+      const nameEn = primary.official_name_en || primary.name_en || '—'
+      const nameZh = primary.name_zh || ''
+      document.getElementById('hero-name-en').textContent = nameEn
+      document.title = nameEn + ' — TMDB'
+
+      if (nameZh) {
+        const nameZhEl = document.getElementById('hero-name-zh')
+        nameZhEl.textContent = nameZh
+        nameZhEl.style.display = ''
+      }
+
+      // Tax ID badge
+      const taxId = primary.tax_id || currentTaxId
+      document.getElementById('hero-tax-badge').innerHTML =
+        `<span class="hero-tax-id">Tax ID: ${escapeHtml(taxId)}</span>`
+
+      // Meta row: industry · city · status
+      const metaItems = []
+      const industry = summary.industries && summary.industries.length
+        ? summary.industries[0]
+        : (primary.industry_en || '')
+      const city = summary.cities && summary.cities.length
+        ? summary.cities[0]
+        : (primary.city_en || '')
+      const status = primary.status || ''
+
+      if (industry) metaItems.push(`<span>${escapeHtml(industry)}</span>`)
+      if (city) {
+        if (metaItems.length) metaItems.push('<span class="dot"></span>')
+        metaItems.push(`<span>${escapeHtml(city)}</span>`)
+      }
+      if (status) {
+        if (metaItems.length) metaItems.push('<span class="dot"></span>')
+        const badgeClass = status === '正常營業' ? 'badge-success' : 'badge-neutral'
+        metaItems.push(`<span class="badge ${badgeClass}">${escapeHtml(status)}</span>`)
+      }
+      if (primary.is_listed) {
+        if (metaItems.length) metaItems.push('<span class="dot"></span>')
+        const stockLabel = primary.stock_id ? '&#128200; TSE ' + escapeHtml(primary.stock_id) : '&#128200; Listed'
+        metaItems.push(`<span class="badge badge-listed">${stockLabel}</span>`)
+      }
+      document.getElementById('hero-meta').innerHTML = metaItems.join('')
+
+      // Links row: website, phone
+      const linkItems = []
+      if (primary.website) {
+        const url = primary.website.startsWith('http') ? primary.website : 'https://' + primary.website
+        linkItems.push(`<a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">&#127760; ${escapeHtml(primary.website)}</a>`)
+      }
+      if (primary.phone) {
+        linkItems.push(`<span>&#128222; ${escapeHtml(primary.phone)}</span>`)
+      }
+      if (primary.email) {
+        linkItems.push(`<a href="mailto:${escapeHtml(primary.email)}">&#9993; ${escapeHtml(primary.email)}</a>`)
+      }
+      document.getElementById('hero-links').innerHTML = linkItems.join('')
+    }
+
+    function renderOverview(data) {
+      const factories = data.factories || []
+      const primary = factories[0] || {}
+
+      const fields = [
+        { label: 'Industry', value: primary.industry_en || primary.industry_zh || '—' },
+        { label: 'City / District', value: [primary.city_en, primary.district_en].filter(Boolean).join(', ') || '—' },
+        { label: 'Address', value: primary.address_zh || '—' },
+        { label: 'Registration Date', value: formatDate(primary.registration_date) },
+        { label: 'Capital Amount', value: formatCapital(primary.capital_amount) },
+        { label: 'Status', value: primary.status || '—' },
+        {
+          label: 'Stock Listing',
+          value: primary.is_listed
+            ? (primary.stock_id ? 'TSE ' + primary.stock_id : 'Listed')
+            : 'Not Listed'
+        },
+        {
+          label: 'Website',
+          value: primary.website
+            ? `<a href="${escapeHtml(primary.website.startsWith('http') ? primary.website : 'https://' + primary.website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(primary.website)}</a>`
+            : '—',
+          raw: true
+        },
+        { label: 'Phone', value: primary.phone || '—' },
+        { label: 'Products', value: truncate(primary.products_en, 200) },
+        { label: 'Certifications', value: truncate(primary.certifications_en, 200) },
+      ]
+
+      const grid = document.getElementById('overview-grid')
+      grid.innerHTML = fields.map(f => `
+        <div class="info-item">
+          <div class="info-item-label">${escapeHtml(f.label)}</div>
+          <div class="info-item-value">${f.raw ? f.value : escapeHtml(f.value)}</div>
+        </div>
+      `).join('')
+
+      // Hidden Champion Score
+      const score = primary.hidden_champion_score
+      if (score != null && score > 0) {
+        document.getElementById('score-value').textContent = score + ' / 100'
+        document.getElementById('score-bar').style.width = Math.min(score, 100) + '%'
+        document.getElementById('score-container').style.display = ''
+      }
+    }
+
+    function renderFactories(data) {
+      const factories = data.factories || []
+      const container = document.getElementById('factories-content')
+
+      const count = factories.length
+      const countEl = document.getElementById('tab-count-factories')
+      countEl.textContent = count
+      if (count > 0) countEl.classList.remove('zero')
+
+      if (!count) {
+        container.innerHTML = emptyState('No factory data available')
+        return
+      }
+
+      const rows = factories.map(f => `
+        <tr>
+          <td>
+            <div style="font-weight:500;">${escapeHtml(f.name_en || '—')}</div>
+            ${f.name_zh ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(f.name_zh)}</div>` : ''}
+          </td>
+          <td>${escapeHtml(f.industry_en || f.industry_zh || '—')}</td>
+          <td>${escapeHtml([f.city_en, f.district_en].filter(Boolean).join(', ') || '—')}</td>
+          <td>${escapeHtml(f.address_zh || '—')}</td>
+          <td>
+            <span class="badge ${f.status === '正常營業' ? 'badge-success' : 'badge-neutral'}">
+              ${escapeHtml(f.status || '—')}
+            </span>
+          </td>
+        </tr>
+      `).join('')
+
+      container.innerHTML = `
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Factory Name</th>
+                <th>Industry</th>
+                <th>Location</th>
+                <th>Address</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `
+    }
+
+    function renderSupplyChain(data) {
+      const links = data.supply_chain || []
+      const container = document.getElementById('supply-chain-content')
+
+      const count = links.length
+      const countEl = document.getElementById('tab-count-supply')
+      countEl.textContent = count
+      if (count > 0) countEl.classList.remove('zero')
+
+      if (!count) {
+        container.innerHTML = emptyState('No supply chain data available yet')
+        return
+      }
+
+      const rows = links.map(link => `
+        <tr>
+          <td>${escapeHtml(link.role || '—')}</td>
+          <td>${escapeHtml(link.company_name_en || link.company_name || '—')}</td>
+          <td>${escapeHtml(link.tax_id || '—')}</td>
+          <td>${escapeHtml(link.industry_en || '—')}</td>
+          <td>${escapeHtml(link.relationship_type || '—')}</td>
+        </tr>
+      `).join('')
+
+      container.innerHTML = `
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Role</th>
+                <th>Company Name</th>
+                <th>Tax ID</th>
+                <th>Industry</th>
+                <th>Relationship</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `
+    }
+
+    function renderPatents(data) {
+      const patents = data.patents || []
+      const container = document.getElementById('patents-content')
+
+      const count = patents.length
+      const countEl = document.getElementById('tab-count-patents')
+      countEl.textContent = count
+      if (count > 0) countEl.classList.remove('zero')
+
+      if (!count) {
+        container.innerHTML = emptyState('No patent data available yet')
+        return
+      }
+
+      const rows = patents.map(p => `
+        <tr>
+          <td style="font-family:monospace;font-size:12px;">${escapeHtml(p.patent_number || p.id || '—')}</td>
+          <td>${escapeHtml(p.title_en || p.title || '—')}</td>
+          <td>${escapeHtml(p.type || '—')}</td>
+          <td>${escapeHtml(formatDate(p.application_date || p.date))}</td>
+          <td>${escapeHtml(formatDate(p.approval_date))}</td>
+        </tr>
+      `).join('')
+
+      container.innerHTML = `
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Patent No.</th>
+                <th>Title</th>
+                <th>Type</th>
+                <th>Filed</th>
+                <th>Approved</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `
+    }
+
+    function renderGovRecords(data) {
+      const records = data.government_records || []
+      const container = document.getElementById('gov-records-content')
+
+      const count = records.length
+      const countEl = document.getElementById('tab-count-gov')
+      countEl.textContent = count
+      if (count > 0) countEl.classList.remove('zero')
+
+      if (!count) {
+        container.innerHTML = emptyState('No government records available yet')
+        return
+      }
+
+      const rows = records.map(r => `
+        <tr>
+          <td>${escapeHtml(r.program_name_en || r.program_name || '—')}</td>
+          <td>${escapeHtml(r.issuing_agency || '—')}</td>
+          <td>${escapeHtml(r.year || '—')}</td>
+          <td>${escapeHtml(r.category || r.type || '—')}</td>
+          <td>${escapeHtml(r.details || '—')}</td>
+        </tr>
+      `).join('')
+
+      container.innerHTML = `
+        <div class="data-table-wrapper">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Program Name</th>
+                <th>Issuing Agency</th>
+                <th>Year</th>
+                <th>Category</th>
+                <th>Details</th>
+              </tr>
+            </thead>
+            <tbody>${rows}</tbody>
+          </table>
+        </div>
+      `
+    }
+
+    // ── Main Load Logic ───────────────────────────────────────────────────────
+
+    const pathParts = window.location.pathname.split('/')
+    const currentTaxId = pathParts[pathParts.length - 1] || ''
+
+    async function loadCompany() {
+      if (!currentTaxId) {
+        showError('No Tax ID provided', 'Please navigate from a search result.')
+        return
+      }
+
+      try {
+        const res = await fetch(`/api/company/${encodeURIComponent(currentTaxId)}`)
+
+        if (!res.ok) {
+          if (res.status === 404) {
+            showError('Company not found', `No data found for Tax ID: ${escapeHtml(currentTaxId)}`)
+          } else {
+            showError('Server error', `HTTP ${res.status} — please try again later.`)
+          }
+          return
+        }
+
+        const data = await res.json()
+
+        if (!data || (!data.factories && !data.summary)) {
+          showError('No data available', `Company record is empty for Tax ID: ${escapeHtml(currentTaxId)}`)
+          return
+        }
+
+        renderHero(data)
+        renderOverview(data)
+        renderFactories(data)
+        renderSupplyChain(data)
+        renderPatents(data)
+        renderGovRecords(data)
+
+        document.getElementById('loading-state').style.display = 'none'
+        document.getElementById('profile-content').style.display = ''
+
+      } catch (err) {
+        showError('Network error', 'Could not reach the server. Please check your connection.')
+      }
+    }
+
+    function showError(title, subtitle) {
+      document.getElementById('loading-state').style.display = 'none'
+      document.getElementById('error-title').textContent = title
+      document.getElementById('error-subtitle').textContent = subtitle
+      document.getElementById('error-state').style.display = 'flex'
+    }
+
+    loadCompany()
+  </script>
+</body>
+</html>
