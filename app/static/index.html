@@ -454,7 +454,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.5);
+      background: rgba(0,0,0,0.55);
       z-index: 1000;
       overflow-y: auto;
       padding: 40px 20px;
@@ -467,9 +467,9 @@
     .modal-content {
       background: white;
       border-radius: 12px;
-      max-width: 640px;
+      max-width: 680px;
       width: 100%;
-      padding: 32px;
+      padding: 28px 32px 32px;
       position: relative;
       box-shadow: 0 20px 60px rgba(0,0,0,0.3);
       animation: modalFadeIn 0.2s ease;
@@ -480,67 +480,165 @@
     }
     .modal-close {
       position: absolute;
-      top: 12px; right: 16px;
+      top: 14px; right: 18px;
       background: none; border: none;
-      font-size: 24px; cursor: pointer;
-      color: #666;
+      font-size: 20px; cursor: pointer;
+      color: #999;
       line-height: 1;
       transition: color 0.15s;
+      padding: 4px;
     }
     .modal-close:hover { color: var(--text); }
+
+    /* Modal header */
+    .modal-header { padding-right: 36px; margin-bottom: 14px; }
     .modal-name-en {
-      font-size: 20px;
+      font-size: 19px;
       font-weight: 600;
       color: var(--text);
-      margin-bottom: 4px;
-      padding-right: 32px;
+      margin-bottom: 3px;
+      line-height: 1.3;
     }
     .modal-name-zh {
       font-size: 14px;
       color: var(--text-secondary);
-      margin-bottom: 6px;
+      margin-bottom: 10px;
     }
-    .modal-meta {
-      font-size: 13px;
-      color: var(--text-secondary);
+    .modal-badges {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      margin-top: 8px;
     }
+    .modal-badge {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .modal-badge-industry { background: #1a73e8; color: #fff; }
+    .modal-badge-city     { background: #1e8e3e; color: #fff; }
+    .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; }
+    .modal-badge-status   { background: #f1f3f4; color: #5f6368; }
+
+    /* Modal sections */
     .modal-section {
-      margin-top: 24px;
+      margin-top: 0;
       padding-top: 16px;
-      border-top: 1px solid #eee;
+      border-top: 1px solid #ebebeb;
     }
     .modal-section h3 {
+      font-size: 10px;
+      font-weight: 700;
+      color: #9aa0a6;
+      text-transform: uppercase;
+      letter-spacing: 0.8px;
+      margin-bottom: 10px;
+    }
+
+    /* Contact section */
+    .contact-lines { display: flex; flex-direction: column; gap: 6px; }
+    .contact-line {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text);
+    }
+    .contact-line-icon { flex-shrink: 0; font-size: 14px; }
+    .contact-line a { color: var(--primary); text-decoration: none; }
+    .contact-line a:hover { text-decoration: underline; }
+
+    /* Snapshot grid */
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      gap: 8px 12px;
+      font-size: 13px;
+    }
+    .snapshot-label { color: #9aa0a6; font-size: 12px; }
+    .snapshot-value { color: var(--text); font-weight: 500; }
+
+    /* Certification chips */
+    .cert-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cert-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 500;
+      background: #e6f4ea;
+      color: #1e7e34;
+      border: 1px solid #c3e6cb;
+    }
+    .cert-chip-check { color: #1e8e3e; font-size: 13px; }
+
+    /* Awards list */
+    .awards-list { display: flex; flex-direction: column; gap: 6px; }
+    .award-item {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      font-size: 13px;
+    }
+    .award-item-icon { flex-shrink: 0; }
+    .award-item-name { color: var(--text); font-weight: 500; }
+    .award-item-year { color: #9aa0a6; font-size: 12px; margin-left: auto; flex-shrink: 0; }
+
+    /* Supply chain */
+    .supply-group { margin-bottom: 12px; }
+    .supply-group:last-child { margin-bottom: 0; }
+    .supply-group-label {
       font-size: 11px;
       font-weight: 600;
-      color: var(--text-secondary);
+      color: #9aa0a6;
       text-transform: uppercase;
-      letter-spacing: 0.6px;
-      margin-bottom: 12px;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
     }
-    .info-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 12px;
-    }
-    .info-grid label {
+    .supply-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
+    .supply-item { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 6px; }
+    .supply-item::before { content: '•'; color: #9aa0a6; flex-shrink: 0; }
+    .supply-ratio { color: #9aa0a6; font-size: 12px; }
+
+    /* Patents list */
+    .patents-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
+    .patent-item { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 6px; }
+    .patent-item::before { content: '•'; color: #9aa0a6; flex-shrink: 0; }
+    .patent-date { color: #9aa0a6; font-size: 12px; white-space: nowrap; }
+
+    /* Factory locations */
+    .city-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .city-chip {
+      display: inline-block;
+      padding: 3px 10px;
+      border-radius: 12px;
       font-size: 12px;
-      color: #999;
-      display: block;
-      margin-bottom: 2px;
+      font-weight: 500;
+      background: #f1f3f4;
+      color: var(--text-secondary);
+      border: 1px solid var(--border);
     }
-    .info-grid span, .info-grid a {
-      font-size: 14px;
-      word-break: break-word;
+
+    /* Modal loading */
+    .modal-loading {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 60px 0;
+      gap: 12px;
+      color: var(--text-secondary);
+      font-size: 13px;
     }
-    .info-grid a {
-      color: var(--primary);
-      text-decoration: none;
-    }
-    .info-grid a:hover { text-decoration: underline; }
+
     @media (max-width: 480px) {
       .modal-overlay { padding: 0; }
-      .modal-content { border-radius: 0; min-height: 100vh; }
-      .info-grid { grid-template-columns: 1fr; }
+      .modal-content { border-radius: 0; min-height: 100vh; padding: 20px 20px 28px; }
+      .snapshot-grid { grid-template-columns: 120px 1fr; }
     }
 
     /* ── Award Badge (profile sidebar) ── */
@@ -938,33 +1036,66 @@
     <div class="modal-content">
       <button class="modal-close" onclick="closeModal()" aria-label="Close">&#10005;</button>
 
-      <div id="modalNameEn" class="modal-name-en">Loading...</div>
-      <div id="modalNameZh" class="modal-name-zh"></div>
-      <div id="modalMeta" class="modal-meta"></div>
-
-      <!-- Basic Info -->
-      <div class="modal-section" id="modalBasicInfo">
-        <h3>Basic Info</h3>
-        <div class="info-grid" id="modalInfoGrid"></div>
+      <!-- Loading state -->
+      <div class="modal-loading" id="modalLoading">
+        <div class="spinner" role="status" aria-label="Loading"></div>
+        <div>Loading company profile...</div>
       </div>
 
-      <!-- Awards & Government Programs -->
-      <div class="modal-section" id="modalAwards" style="display:none">
-        <h3>Awards &amp; Government Programs</h3>
-        <div id="modalAwardsList" class="award-badges-wrap"></div>
+      <!-- Content (hidden while loading) -->
+      <div id="modalBody" style="display:none">
+        <!-- Header -->
+        <div class="modal-header">
+          <div id="modalNameEn" class="modal-name-en"></div>
+          <div id="modalNameZh" class="modal-name-zh"></div>
+          <div id="modalBadges" class="modal-badges"></div>
+        </div>
+
+        <!-- Contact -->
+        <div class="modal-section" id="modalSectionContact" style="display:none">
+          <h3>Contact</h3>
+          <div class="contact-lines" id="modalContactLines"></div>
+        </div>
+
+        <!-- Company Snapshot -->
+        <div class="modal-section" id="modalSectionSnapshot">
+          <h3>Company Snapshot</h3>
+          <div class="snapshot-grid" id="modalSnapshotGrid"></div>
+        </div>
+
+        <!-- Certifications -->
+        <div class="modal-section" id="modalSectionCerts" style="display:none">
+          <h3>Certifications</h3>
+          <div class="cert-chips" id="modalCertChips"></div>
+        </div>
+
+        <!-- Awards & Programs -->
+        <div class="modal-section" id="modalSectionAwards" style="display:none">
+          <h3>Awards &amp; Programs</h3>
+          <div class="awards-list" id="modalAwardsList"></div>
+        </div>
+
+        <!-- Supply Chain -->
+        <div class="modal-section" id="modalSectionSupply" style="display:none">
+          <h3>Supply Chain</h3>
+          <div id="modalSupplyContent"></div>
+        </div>
+
+        <!-- Patents -->
+        <div class="modal-section" id="modalSectionPatents" style="display:none">
+          <h3>Patents</h3>
+          <div id="modalPatentsCount" style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
+          <ul class="patents-list" id="modalPatentsList"></ul>
+        </div>
+
+        <!-- Factory Locations -->
+        <div class="modal-section" id="modalSectionLocations">
+          <h3>Factory Locations</h3>
+          <div id="modalLocationsText" style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
+          <div class="city-chips" id="modalCityChips"></div>
+        </div>
       </div>
 
-      <!-- Certifications -->
-      <div class="modal-section" id="modalCerts" style="display:none">
-        <h3>Certifications</h3>
-        <div id="modalCertsContent"></div>
-      </div>
-
-      <!-- Quality Indicators -->
-      <div class="modal-section" id="modalScore" style="display:none">
-        <h3>Quality Indicators</h3>
-        <div id="modalScoreContent"></div>
-      </div>
     </div>
   </div>
 
@@ -1407,103 +1538,297 @@
     }
 
     // ── Company Profile Modal ──────────────────────────────────
+
+    function formatCapitalFull(amount) {
+      if (!amount) return null
+      return 'NT$ ' + Number(amount).toLocaleString()
+    }
+
+    function showSection(id, visible) {
+      document.getElementById(id).style.display = visible ? 'block' : 'none'
+    }
+
+    function cleanCompanyNameEn(name) {
+      if (!name) return name
+      // strip common factory suffix patterns
+      return name
+        .replace(/\s+Plant\s+\d+$/i, '')
+        .replace(/\s+Factory\s+\d+$/i, '')
+        .replace(/\s+Branch\s+\d+$/i, '')
+        .replace(/[一二三四五六七八九十百千]+廠$/, '')
+        .trim()
+    }
+
     async function openCompanyModal(taxId) {
       companyModal.classList.add('active')
       document.body.style.overflow = 'hidden'
 
-      // Reset to loading state
-      document.getElementById('modalNameEn').textContent = 'Loading...'
-      document.getElementById('modalNameZh').textContent = ''
-      document.getElementById('modalMeta').textContent = ''
-      document.getElementById('modalInfoGrid').innerHTML = ''
-      document.getElementById('modalAwards').style.display = 'none'
-      document.getElementById('modalCerts').style.display = 'none'
-      document.getElementById('modalScore').style.display = 'none'
+      // show loading, hide body
+      document.getElementById('modalLoading').style.display = 'flex'
+      showSection('modalBody', false)
 
       try {
         const data = await fetchJson(`${API_BASE}/api/company/${encodeURIComponent(taxId)}`)
 
-        // API returns { factories: [...], government_records: [...], patents: [...], supply_chain: [...] }
-        const factories = Array.isArray(data.factories) ? data.factories : []
-        const f = factories[0] || data.factory || {}
+        const factories   = Array.isArray(data.factories)         ? data.factories         : []
+        const supplyChain = Array.isArray(data.supply_chain)      ? data.supply_chain      : []
+        const patents     = Array.isArray(data.patents)           ? data.patents           : []
+        const govRecords  = Array.isArray(data.government_records)? data.government_records: []
+        const summary     = data.summary || {}
 
-        const nameEn = f.official_name_en || f.name_en || f.name || '—'
-        const nameZh = f.name_zh || ''
-        const industry = f.industry_en || '—'
-        const city = [f.city_en, f.district_en].filter(Boolean).join(' / ') || f.city || '—'
-        const status = f.status || ''
+        // pick representative factory for contact data
+        const f0 = factories[0] || {}
 
+        // ── Company name ──────────────────────────────────────
+        const rawNameEn = f0.official_name_en || f0.name_en || ''
+        const nameEn    = cleanCompanyNameEn(rawNameEn) || taxId
+        const nameZh    = f0.name_zh ? cleanCompanyNameEn(f0.name_zh) : ''
         document.getElementById('modalNameEn').textContent = nameEn
         document.getElementById('modalNameZh').textContent = nameZh
-        document.getElementById('modalMeta').textContent = [industry, city, status].filter(Boolean).join(' · ')
 
-        // Basic info grid
-        const address = f.address_zh || f.registered_address || f.address || ''
-        const regDate = f.registration_date ? formatDate(f.registration_date) : ''
-        const capital = f.capital_amount ? formatCapital(f.capital_amount) : ''
-        const phone = f.phone || ''
-        const email = f.email || ''
-        const website = f.website || f.findbiz_url || ''
-        const fax = f.fax || ''
+        // ── Badges ────────────────────────────────────────────
+        const badgeItems = []
+        const industry = f0.industry_en || (summary.industries && summary.industries[0]) || ''
+        if (industry) badgeItems.push(`<span class="modal-badge modal-badge-industry">${escapeHtml(industry)}</span>`)
 
-        const infoItems = [
-          { label: 'Tax ID',              value: escapeHtml(f.tax_id || taxId) },
-          { label: 'Address',             value: escapeHtml(address) },
-          { label: 'Registration Date',   value: escapeHtml(regDate) },
-          { label: 'Capital',             value: escapeHtml(capital) },
-          { label: 'Phone',               value: phone ? escapeHtml(phone) : '' },
-          { label: 'Fax',                 value: fax ? escapeHtml(fax) : '' },
-          { label: 'Email',               value: email ? `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>` : '' },
-          { label: 'Website',             value: website ? `<a href="${escapeHtml(website.startsWith('http') ? website : 'https://' + website)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a>` : '' },
-        ]
+        const cities = summary.cities || (f0.city_en ? [f0.city_en] : [])
+        if (cities.length > 0) {
+          const cityLabel = cities.length === 1 ? cities[0] : `${cities.length} cities`
+          badgeItems.push(`<span class="modal-badge modal-badge-city">${escapeHtml(cityLabel)}</span>`)
+        }
 
-        document.getElementById('modalInfoGrid').innerHTML = infoItems
-          .filter(item => item.value)
-          .map(item => `<div><label>${escapeHtml(item.label)}</label><span>${item.value}</span></div>`)
-          .join('')
+        // scan factories for listing info
+        const listedFactory = factories.find(fc => fc.is_listed || fc.stock_id)
+        if (listedFactory) {
+          const stockLabel = listedFactory.stock_id
+            ? `Listed · ${listedFactory.stock_id}`
+            : 'Listed'
+          badgeItems.push(`<span class="modal-badge modal-badge-listed">&#128200; ${escapeHtml(stockLabel)}</span>`)
+        }
 
-        // Awards & Government Programs
-        const govRecords = Array.isArray(data.government_records) ? data.government_records : []
+        document.getElementById('modalBadges').innerHTML = badgeItems.join('')
+
+        // ── Contact ───────────────────────────────────────────
+        // scan all factories for first non-null contact fields
+        let phone = null, email = null, website = null
+        for (const fc of factories) {
+          if (!phone   && fc.phone)   phone   = fc.phone
+          if (!email   && fc.email)   email   = fc.email
+          if (!website && fc.website) website = fc.website
+          if (phone && email && website) break
+        }
+
+        // always show address from first factory
+        const address = f0.address_zh || ''
+        const contactLines = []
+        if (address) {
+          const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(address)}`
+          contactLines.push(
+            `<div class="contact-line"><span class="contact-line-icon">&#128205;</span>` +
+            `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(address)}</a></div>`
+          )
+        }
+        if (phone) {
+          contactLines.push(
+            `<div class="contact-line"><span class="contact-line-icon">&#128222;</span>${escapeHtml(phone)}</div>`
+          )
+        }
+        if (email) {
+          contactLines.push(
+            `<div class="contact-line"><span class="contact-line-icon">&#128231;</span>` +
+            `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></div>`
+          )
+        }
+        if (website) {
+          const href = website.startsWith('http') ? website : `https://${website}`
+          contactLines.push(
+            `<div class="contact-line"><span class="contact-line-icon">&#127760;</span>` +
+            `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a></div>`
+          )
+        }
+
+        const hasContact = address || phone || email || website
+        document.getElementById('modalContactLines').innerHTML = contactLines.join('')
+        showSection('modalSectionContact', !!hasContact)
+
+        // ── Company Snapshot ──────────────────────────────────
+        // earliest registration date across all factories
+        let earliestDate = null
+        for (const fc of factories) {
+          if (fc.registration_date) {
+            if (!earliestDate || fc.registration_date < earliestDate) {
+              earliestDate = fc.registration_date
+            }
+          }
+        }
+        // largest capital amount
+        let maxCapital = null
+        for (const fc of factories) {
+          if (fc.capital_amount && (!maxCapital || fc.capital_amount > maxCapital)) {
+            maxCapital = fc.capital_amount
+          }
+        }
+
+        const factoryCount   = factories.length || (summary.total_factories ?? 0)
+        const uniqueCities   = summary.cities ? summary.cities.length : new Set(factories.map(fc => fc.city_en).filter(Boolean)).size
+        const snapshotRows   = []
+        snapshotRows.push(['Tax ID', escapeHtml(f0.tax_id || taxId)])
+        if (earliestDate)  snapshotRows.push(['Founded', escapeHtml(formatDate(earliestDate))])
+        if (maxCapital)    snapshotRows.push(['Capital', escapeHtml(formatCapitalFull(maxCapital))])
+        snapshotRows.push([
+          'Factories',
+          escapeHtml(
+            factoryCount
+              ? `${factoryCount}${uniqueCities > 1 ? ` (across ${uniqueCities} cities)` : ''}`
+              : '—'
+          )
+        ])
+
+        document.getElementById('modalSnapshotGrid').innerHTML = snapshotRows.map(([label, val]) =>
+          `<span class="snapshot-label">${label}</span><span class="snapshot-value">${val}</span>`
+        ).join('')
+
+        // ── Certifications ────────────────────────────────────
+        const allCerts = new Set()
+        for (const fc of factories) {
+          if (fc.certifications_en) {
+            let raw = fc.certifications_en
+            if (raw.startsWith('Typical: ')) raw = raw.slice('Typical: '.length)
+            raw.split(',').map(s => s.trim()).filter(Boolean).forEach(c => allCerts.add(c))
+          }
+        }
+        if (allCerts.size > 0) {
+          document.getElementById('modalCertChips').innerHTML = [...allCerts].map(cert =>
+            `<span class="cert-chip"><span class="cert-chip-check">&#10003;</span>${escapeHtml(cert)}</span>`
+          ).join('')
+          showSection('modalSectionCerts', true)
+        } else {
+          showSection('modalSectionCerts', false)
+        }
+
+        // ── Awards & Programs ─────────────────────────────────
         if (govRecords.length > 0) {
-          document.getElementById('modalAwards').style.display = 'block'
-          document.getElementById('modalAwardsList').innerHTML = govRecords.map(rec => {
-            const name   = escapeHtml(rec.program_name_en || rec.program_name || '—')
-            const agency = escapeHtml(rec.issuing_agency || rec.agency || '')
-            const year   = rec.year ? escapeHtml(String(rec.year)) : null
-            return `<div class="award-badge">
-              <span class="award-badge-name">${name}</span>
-              ${agency ? `<span class="award-badge-agency">${agency}</span>` : ''}
-              ${year   ? `<span class="award-badge-year">${year}</span>` : ''}
+          const sorted = [...govRecords].sort((a, b) => (b.year || 0) - (a.year || 0))
+          const iconMap = { award: '&#127942;', subsidy: '&#128176;', certification: '&#128203;' }
+          document.getElementById('modalAwardsList').innerHTML = sorted.map(rec => {
+            const icon = iconMap[rec.record_type] || '&#127942;'
+            const name = escapeHtml(rec.program_name_en || rec.program_name || '—')
+            const year = rec.year ? escapeHtml(String(rec.year)) : ''
+            return `<div class="award-item">
+              <span class="award-item-icon">${icon}</span>
+              <span class="award-item-name">${name}</span>
+              ${year ? `<span class="award-item-year">${year}</span>` : ''}
             </div>`
           }).join('')
+          showSection('modalSectionAwards', true)
+        } else {
+          showSection('modalSectionAwards', false)
         }
 
-        // Certifications
-        if (f.certifications_en) {
-          document.getElementById('modalCerts').style.display = 'block'
-          document.getElementById('modalCertsContent').innerHTML = certBadges(f.certifications_en)
+        // ── Supply Chain ──────────────────────────────────────
+        if (supplyChain.length > 0) {
+          const companyName = nameZh || nameEn
+          // "Supplies to" = company is supplier, counterpart is buyer
+          // "Buys from"   = company is buyer, counterpart is supplier
+          const suppliesTo = supplyChain
+            .filter(sc => sc.relationship_type === 'supplier' || sc.supplier_name === companyName || sc.supplier_name === nameZh)
+            .slice(0, 5)
+          const buysFrom = supplyChain
+            .filter(sc => sc.relationship_type === 'buyer' || sc.buyer_name === companyName || sc.buyer_name === nameZh)
+            .slice(0, 5)
+
+          // fallback: if filtering is ambiguous, split by relationship_type field
+          const supplyGroups = []
+          const suppliesToFallback = supplyChain.filter(sc => sc.relationship_type === 'supplier').slice(0, 5)
+          const buysFromFallback   = supplyChain.filter(sc => sc.relationship_type === 'buyer').slice(0, 5)
+          const hasSuppliesTo = suppliesTo.length > 0 || suppliesToFallback.length > 0
+          const hasBuysFrom   = buysFrom.length > 0 || buysFromFallback.length > 0
+
+          const renderSupplyItems = (items) => items.map(sc => {
+            const partner = escapeHtml(sc.buyer_name || sc.supplier_name || '—')
+            const ratio   = sc.purchase_ratio ? `<span class="supply-ratio">(${sc.purchase_ratio}%)</span>` : ''
+            return `<li class="supply-item">${partner} ${ratio}</li>`
+          }).join('')
+
+          let supplyHtml = ''
+          const groupsToRender = []
+          if (suppliesToFallback.length > 0) groupsToRender.push({ label: 'Supplies to', items: suppliesToFallback })
+          if (buysFromFallback.length > 0)   groupsToRender.push({ label: 'Buys from',   items: buysFromFallback })
+          if (groupsToRender.length === 0) {
+            // single group, no direction info
+            groupsToRender.push({ label: 'Relationships', items: supplyChain.slice(0, 10) })
+          }
+
+          supplyHtml = groupsToRender.map(g =>
+            `<div class="supply-group">
+              <div class="supply-group-label">${escapeHtml(g.label)}</div>
+              <ul class="supply-list">${renderSupplyItems(g.items)}</ul>
+            </div>`
+          ).join('')
+
+          document.getElementById('modalSupplyContent').innerHTML = supplyHtml
+          showSection('modalSectionSupply', true)
+        } else {
+          showSection('modalSectionSupply', false)
         }
 
-        // Quality Indicators
-        const score = f.hidden_champion_score || 0
-        const patentCount = Array.isArray(data.patents) ? data.patents.length : 0
-        if (score > 0 || patentCount > 0) {
-          document.getElementById('modalScore').style.display = 'block'
-          const parts = []
-          if (score > 0) parts.push(`Hidden Champion Score: <strong>${score}</strong>/100`)
-          if (patentCount > 0) parts.push(`Patents: <strong>${patentCount}</strong>`)
-          document.getElementById('modalScoreContent').innerHTML = parts.join('<br>')
+        // ── Patents ───────────────────────────────────────────
+        if (patents.length > 0) {
+          document.getElementById('modalPatentsCount').textContent = `${patents.length} patent${patents.length !== 1 ? 's' : ''} filed`
+          const top5 = patents.slice(0, 5)
+          document.getElementById('modalPatentsList').innerHTML = top5.map(p => {
+            const title = escapeHtml(p.title_en || p.patent_number || '—')
+            const date  = p.publication_date ? escapeHtml(p.publication_date.slice(0, 4)) : ''
+            return `<li class="patent-item">${title}${date ? ` <span class="patent-date">(${date})</span>` : ''}</li>`
+          }).join('')
+          showSection('modalSectionPatents', true)
+        } else {
+          showSection('modalSectionPatents', false)
         }
+
+        // ── Factory Locations ─────────────────────────────────
+        const cityCount = {}
+        for (const fc of factories) {
+          const c = fc.city_en || fc.city
+          if (c) cityCount[c] = (cityCount[c] || 0) + 1
+        }
+        const cityEntries = Object.entries(cityCount).sort((a, b) => b[1] - a[1])
+        const totalFact = factories.length
+        const totalCity = cityEntries.length
+
+        document.getElementById('modalLocationsText').textContent =
+          totalFact
+            ? `${totalFact} factor${totalFact !== 1 ? 'ies' : 'y'} across ${totalCity} cit${totalCity !== 1 ? 'ies' : 'y'}`
+            : ''
+        document.getElementById('modalCityChips').innerHTML = cityEntries.map(([city, count]) =>
+          `<span class="city-chip">${escapeHtml(city)} (${count})</span>`
+        ).join('')
+
+        // show body
+        document.getElementById('modalLoading').style.display = 'none'
+        showSection('modalBody', true)
 
       } catch (err) {
-        document.getElementById('modalNameEn').textContent = 'Error loading data'
-        document.getElementById('modalMeta').textContent = err.message
+        const loadingEl = document.getElementById('modalLoading')
+        loadingEl.style.display = 'flex'
+        loadingEl.innerHTML =
+          `<div style="color:var(--danger);font-size:14px;">Failed to load: ${escapeHtml(err.message)}</div>`
+        showSection('modalBody', false)
       }
     }
 
     function closeModal() {
       companyModal.classList.remove('active')
       document.body.style.overflow = ''
+      // reset to loading state so next open shows spinner immediately
+      const loadingEl = document.getElementById('modalLoading')
+      if (loadingEl) {
+        loadingEl.style.display = 'flex'
+        loadingEl.innerHTML =
+          '<div class="spinner" role="status" aria-label="Loading"></div>' +
+          '<div>Loading company profile...</div>'
+      }
+      showSection('modalBody', false)
     }
 
     companyModal.addEventListener('click', e => {
