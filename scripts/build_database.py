@@ -46,6 +46,7 @@ CREATE VIRTUAL TABLE IF NOT EXISTS factories_fts USING fts5(
     industry_en,
     city_en,
     district_en,
+    search_tags,
     content='factories',
     content_rowid='id'
 );
@@ -54,20 +55,20 @@ CREATE VIRTUAL TABLE IF NOT EXISTS factories_fts USING fts5(
 # FTS5 content table triggers（保持 FTS 索引與主表同步）
 DDL_TRIGGERS = """
 CREATE TRIGGER IF NOT EXISTS factories_ai AFTER INSERT ON factories BEGIN
-    INSERT INTO factories_fts(rowid, name_en, industry_en, city_en, district_en)
-    VALUES (new.id, new.name_en, new.industry_en, new.city_en, new.district_en);
+    INSERT INTO factories_fts(rowid, name_en, industry_en, city_en, district_en, search_tags)
+    VALUES (new.id, new.name_en, new.industry_en, new.city_en, new.district_en, new.search_tags);
 END;
 
 CREATE TRIGGER IF NOT EXISTS factories_ad AFTER DELETE ON factories BEGIN
-    INSERT INTO factories_fts(factories_fts, rowid, name_en, industry_en, city_en, district_en)
-    VALUES ('delete', old.id, old.name_en, old.industry_en, old.city_en, old.district_en);
+    INSERT INTO factories_fts(factories_fts, rowid, name_en, industry_en, city_en, district_en, search_tags)
+    VALUES ('delete', old.id, old.name_en, old.industry_en, old.city_en, old.district_en, old.search_tags);
 END;
 
 CREATE TRIGGER IF NOT EXISTS factories_au AFTER UPDATE ON factories BEGIN
-    INSERT INTO factories_fts(factories_fts, rowid, name_en, industry_en, city_en, district_en)
-    VALUES ('delete', old.id, old.name_en, old.industry_en, old.city_en, old.district_en);
-    INSERT INTO factories_fts(rowid, name_en, industry_en, city_en, district_en)
-    VALUES (new.id, new.name_en, new.industry_en, new.city_en, new.district_en);
+    INSERT INTO factories_fts(factories_fts, rowid, name_en, industry_en, city_en, district_en, search_tags)
+    VALUES ('delete', old.id, old.name_en, old.industry_en, old.city_en, old.district_en, old.search_tags);
+    INSERT INTO factories_fts(rowid, name_en, industry_en, city_en, district_en, search_tags)
+    VALUES (new.id, new.name_en, new.industry_en, new.city_en, new.district_en, new.search_tags);
 END;
 """
 

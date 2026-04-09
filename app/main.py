@@ -282,6 +282,36 @@ def _migrate_moea_extended_columns(conn: sqlite3.Connection) -> None:
   ])
 
 
+def _migrate_search_tags(conn: sqlite3.Connection) -> None:
+  """在 factories 表新增 search_tags 欄位，並確保 FTS5 索引包含該欄位。"""
+  _migrate_columns(conn, [
+    "ALTER TABLE factories ADD COLUMN search_tags TEXT DEFAULT ''",
+  ])
+
+  # 檢查 factories_fts 是否已含 search_tags 欄位（讀取建表 SQL 判斷）
+  row = conn.execute(
+    "SELECT sql FROM sqlite_master WHERE name = 'factories_fts'"
+  ).fetchone()
+  fts_has_search_tags = row and 'search_tags' in (row[0] or '')
+
+  if not fts_has_search_tags:
+    # FTS5 不支援 ALTER，需要 DROP 重建
+    conn.execute('DROP TABLE IF EXISTS factories_fts')
+    conn.execute("""
+      CREATE VIRTUAL TABLE factories_fts USING fts5(
+          name_en,
+          industry_en,
+          city_en,
+          district_en,
+          search_tags,
+          content='factories',
+          content_rowid='id'
+      )
+    """)
+    conn.execute("INSERT INTO factories_fts(factories_fts) VALUES('rebuild')")
+    conn.commit()
+
+
 def init_db() -> None:
   """初始化資料庫 schema（向下相容）。新表使用 IF NOT EXISTS，不修改既有表。"""
   if not DB_PATH.exists():
@@ -294,6 +324,7 @@ def init_db() -> None:
     _migrate_hidden_champion_columns(conn)
     _migrate_listed_company_columns(conn)
     _migrate_moea_extended_columns(conn)
+    _migrate_search_tags(conn)
     # 建立預設 demo key（前端用）
     conn.execute(
       """
