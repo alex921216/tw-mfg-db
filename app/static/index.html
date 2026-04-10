@@ -730,10 +730,9 @@
 
     /* ── Responsive ── */
     @media (max-width: 768px) {
-      /* Hide Products (col 3), Reg. Date (col 6), Capital (col 7) on mobile */
+      /* Hide Products (col 3), Reg. Date (col 6) on mobile */
       #resultsTable th:nth-child(3), #resultsTable td:nth-child(3),
-      #resultsTable th:nth-child(6), #resultsTable td:nth-child(6),
-      #resultsTable th:nth-child(7), #resultsTable td:nth-child(7) {
+      #resultsTable th:nth-child(6), #resultsTable td:nth-child(6) {
         display: none;
       }
     }
@@ -1006,7 +1005,6 @@
               <th scope="col">City / District</th>
               <th scope="col">Tax ID</th>
               <th scope="col">Reg. Date</th>
-              <th scope="col">Capital (NT$)</th>
             </tr>
           </thead>
           <tbody id="resultsBody">
@@ -1533,7 +1531,6 @@
           <td>${city}</td>
           <td>${taxId}</td>
           <td>${regDate}</td>
-          <td>${capital}</td>
         </tr>${contactRow}`
       }).join('')
     }
