@@ -1020,7 +1020,7 @@
       </div>
 
       <div class="state-center" id="stateEmpty" style="display:none;">
-        <div class="empty-icon" aria-hidden="true">&#128269;</div>
+        <div class="empty-icon" aria-hidden="true">Search</div>
         <div>No factories found matching your search.</div>
       </div>
 
@@ -1128,7 +1128,7 @@
 
         <!-- Google fallback -->
         <div class="google-fallback">
-          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">&#128269; Search "<span id="qlGoogleLabel"></span>" on Google</a>
+          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">Search Search "<span id="qlGoogleLabel"></span>" on Google</a>
         </div>
       </div>
 
@@ -1401,9 +1401,7 @@
 
         const displayNameEn = row.official_name_en ? escapeHtml(row.official_name_en) : (nameEn || '—')
 
-        const listedBadge = row.is_listed
-          ? `<span style="font-size:10px;font-weight:600;background:#e8f0fe;color:#1a73e8;border:1px solid #c5d5f8;border-radius:4px;padding:1px 5px;vertical-align:middle;margin-left:4px;">&#128200; ${row.stock_id ? row.stock_id : 'Listed'}</span>`
-          : ''
+        const listedBadge = ''  // stock info moved to modal
 
         const rowId = `contact-${row.id || rawTaxId}`
 
@@ -1421,7 +1419,7 @@
         if (addressZhRaw) {
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128205;</span>
+              <span class="contact-item-icon">Addr:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Factory Address</span>
                 <span class="contact-item-value">${escapeHtml(addressZhRaw)}</span>
@@ -1441,7 +1439,7 @@
         if (row.phone) {
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128222;</span>
+              <span class="contact-item-icon">Tel:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Phone</span>
                 <span class="contact-item-value">${escapeHtml(row.phone)}</span>
@@ -1451,7 +1449,7 @@
         if (row.email) {
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128231;</span>
+              <span class="contact-item-icon">Email:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Email</span>
                 <a href="mailto:${escapeHtml(row.email)}" class="company-link">${escapeHtml(row.email)}</a>
@@ -1462,7 +1460,7 @@
           const websiteHref = row.website.startsWith('http') ? row.website : `https://${row.website}`
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#127760;</span>
+              <span class="contact-item-icon">Web:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Website</span>
                 <a href="${escapeHtml(websiteHref)}" target="_blank" rel="noopener noreferrer" class="company-link">${escapeHtml(row.website)}</a>
@@ -1472,7 +1470,7 @@
         if (row.fax) {
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128224;</span>
+              <span class="contact-item-icon">Fax:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Fax</span>
                 <span class="contact-item-value">${escapeHtml(row.fax)}</span>
@@ -1483,7 +1481,7 @@
           const googleSearchUrl = `https://www.google.com/search?q=${encodeURIComponent(nameZhRaw + ' 電話 聯絡')}`
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128269;</span>
+              <span class="contact-item-icon">Search</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Search Company</span>
                 <a href="${escapeHtml(googleSearchUrl)}" target="_blank" rel="noopener noreferrer">Search on Google &rarr;</a>
@@ -1493,7 +1491,7 @@
         if (mapsUrl) {
           contactPanelItems.push(`
             <div class="contact-item">
-              <span class="contact-item-icon">&#128205;</span>
+              <span class="contact-item-icon">Addr:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Google Maps</span>
                 <a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">Open in Maps &rarr;</a>
@@ -1515,11 +1513,11 @@
 
         // ISSUE-004: show phone and website inline under company name
         const phoneInline = row.phone
-          ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">&#128222; ${escapeHtml(row.phone)}</div>`
+          ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Tel: ${escapeHtml(row.phone)}</div>`
           : ''
         const websiteRaw = row.website || ''
         const websiteInline = websiteRaw
-          ? `<div style="font-size:11px;margin-top:1px;"><a href="${escapeHtml(websiteRaw.startsWith('http') ? websiteRaw : 'https://' + websiteRaw)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:none;">&#127760; ${escapeHtml(websiteRaw)}</a></div>`
+          ? `<div style="font-size:11px;margin-top:1px;"><a href="${escapeHtml(websiteRaw.startsWith('http') ? websiteRaw : 'https://' + websiteRaw)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);text-decoration:none;">Web: ${escapeHtml(websiteRaw)}</a></div>`
           : ''
 
         return `<tr>
@@ -1647,10 +1645,12 @@
         // scan factories for listing info
         const listedFactory = factories.find(fc => fc.is_listed || fc.stock_id)
         if (listedFactory) {
-          const stockLabel = listedFactory.stock_id
-            ? `Listed · ${listedFactory.stock_id}`
-            : 'Listed'
-          badgeItems.push(`<span class="modal-badge modal-badge-listed">&#128200; ${escapeHtml(stockLabel)}</span>`)
+          if (listedFactory.stock_id) {
+            const yahooUrl = `https://finance.yahoo.com/quote/${listedFactory.stock_id}.TW/`
+            badgeItems.push(`<a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" class="modal-badge modal-badge-listed" style="text-decoration:none;">TW: ${escapeHtml(listedFactory.stock_id)}</a>`)
+          } else {
+            badgeItems.push(`<span class="modal-badge modal-badge-listed">Listed</span>`)
+          }
         }
 
         document.getElementById('modalBadges').innerHTML = badgeItems.join('')
@@ -1669,19 +1669,19 @@
         const contactLines = []
         if (phone) {
           contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">&#128222;</span>${escapeHtml(phone)}</div>`
+            `<div class="contact-line"><span class="contact-line-icon">Tel:</span>${escapeHtml(phone)}</div>`
           )
         }
         if (email) {
           contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">&#128231;</span>` +
+            `<div class="contact-line"><span class="contact-line-icon">Email:</span>` +
             `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></div>`
           )
         }
         if (website) {
           const href = website.startsWith('http') ? website : `https://${website}`
           contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">&#127760;</span>` +
+            `<div class="contact-line"><span class="contact-line-icon">Web:</span>` +
             `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a></div>`
           )
         }
@@ -1756,9 +1756,9 @@
         // ── Awards & Programs ─────────────────────────────────
         if (govRecords.length > 0) {
           const sorted = [...govRecords].sort((a, b) => (b.year || 0) - (a.year || 0))
-          const iconMap = { award: '&#127942;', subsidy: '&#128176;', certification: '&#128203;' }
+          const iconMap = { award: '*', subsidy: '$', certification: 'Cert:' }
           document.getElementById('modalAwardsList').innerHTML = sorted.map(rec => {
-            const icon = iconMap[rec.record_type] || '&#127942;'
+            const icon = iconMap[rec.record_type] || '*'
             const name = escapeHtml(rec.program_name_en || rec.program_name || '—')
             const year = rec.year ? escapeHtml(String(rec.year)) : ''
             return `<div class="award-item">
@@ -1865,10 +1865,10 @@
                 const nameDisplay = escapeHtml(s.name_en || s.name_zh || s.tax_id)
                 const meta = [s.industry_en, s.city_en].filter(Boolean).join(' · ')
                 const contactBits = []
-                if (s.phone) contactBits.push(`📞 ${escapeHtml(s.phone)}`)
+                if (s.phone) contactBits.push(`Tel:  ${escapeHtml(s.phone)}`)
                 if (s.website) {
                   const href = s.website.startsWith('http') ? s.website : 'https://' + s.website
-                  contactBits.push(`<a href="${escapeHtml(href)}" target="_blank" style="color:var(--primary);text-decoration:none;">🌐 Website</a>`)
+                  contactBits.push(`<a href="${escapeHtml(href)}" target="_blank" style="color:var(--primary);text-decoration:none;">Web:  Website</a>`)
                 }
                 return `<div style="padding:10px 12px;background:#f8f9fa;border-radius:8px;cursor:pointer;" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
                   <div style="font-weight:600;font-size:13px;">${nameDisplay}</div>
@@ -1943,7 +1943,7 @@
           ? (s.count / 1000).toFixed(1) + 'k'
           : String(s.count)
         return `<div class="suggest-item" data-index="${i}" role="option">` +
-          `<span>&#128269; ${escHtml(s.text)}</span>` +
+          `<span>Search ${escHtml(s.text)}</span>` +
           `<span class="suggest-type">${escHtml(s.type)}</span>` +
           `<span class="suggest-count">${countStr}</span>` +
           `</div>`
