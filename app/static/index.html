@@ -1256,6 +1256,23 @@
         .replace(/'/g, '&#39;')
     }
 
+    function formatPhoneIntl(phone) {
+      if (!phone) return ''
+      let p = phone.trim()
+      // Already has +886
+      if (p.startsWith('+886')) return p
+      if (p.startsWith('886')) return '+' + p
+      // Starts with 0 (Taiwan local), convert to +886
+      if (p.startsWith('0')) {
+        return '+886-' + p.slice(1)
+      }
+      // Starts with ( like (02) or (04)
+      if (p.startsWith('(0')) {
+        return '+886-' + p.slice(2).replace(')', '-')
+      }
+      return '+886-' + p
+    }
+
     // ── URL Sync ───────────────────────────────────────────────
     function syncStateToUrl() {
       const p = new URLSearchParams()
@@ -1442,7 +1459,7 @@
               <span class="contact-item-icon">Tel:</span>
               <div class="contact-item-body">
                 <span class="contact-item-label">Phone</span>
-                <span class="contact-item-value">${escapeHtml(row.phone)}</span>
+                <span class="contact-item-value">${escapeHtml(formatPhoneIntl(row.phone))}</span>
               </div>
             </div>`)
         }
@@ -1513,7 +1530,7 @@
 
         // ISSUE-004: show phone and website inline under company name
         const phoneInline = row.phone
-          ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Tel: ${escapeHtml(row.phone)}</div>`
+          ? `<div style="font-size:11px;color:var(--text-secondary);margin-top:2px;">Tel: ${escapeHtml(formatPhoneIntl(row.phone))}</div>`
           : ''
         const websiteRaw = row.website || ''
         const websiteInline = websiteRaw
@@ -1643,15 +1660,7 @@
         }
 
         // scan factories for listing info
-        const listedFactory = factories.find(fc => fc.is_listed || fc.stock_id)
-        if (listedFactory) {
-          if (listedFactory.stock_id) {
-            const yahooUrl = `https://finance.yahoo.com/quote/${listedFactory.stock_id}.TW/`
-            badgeItems.push(`<a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" class="modal-badge modal-badge-listed" style="text-decoration:none;">TW: ${escapeHtml(listedFactory.stock_id)}</a>`)
-          } else {
-            badgeItems.push(`<span class="modal-badge modal-badge-listed">Listed</span>`)
-          }
-        }
+        // stock info moved to Company Snapshot section below
 
         document.getElementById('modalBadges').innerHTML = badgeItems.join('')
 
@@ -1669,7 +1678,7 @@
         const contactLines = []
         if (phone) {
           contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">Tel:</span>${escapeHtml(phone)}</div>`
+            `<div class="contact-line"><span class="contact-line-icon">Tel:</span>${escapeHtml(formatPhoneIntl(phone))}</div>`
           )
         }
         if (email) {
@@ -1728,6 +1737,16 @@
           snapshotRows.push([
             'Address',
             `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(address)}</a>`
+          ])
+        }
+
+        // Stock listing with Yahoo Finance link
+        const listedFactory = factories.find(fc => fc.is_listed || fc.stock_id)
+        if (listedFactory && listedFactory.stock_id) {
+          const yahooUrl = `https://tw.stock.yahoo.com/quote/${listedFactory.stock_id}/profile`
+          snapshotRows.push([
+            'Stock',
+            `<a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">TW: ${escapeHtml(listedFactory.stock_id)} - View on Yahoo Finance &rarr;</a>`
           ])
         }
 
