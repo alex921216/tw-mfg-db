@@ -590,6 +590,7 @@ def build_search_query(
   select_clause: str = 'f.*',
   order_clause: str = '',
   limit_clause: str = '',
+  group_clause: str = '',
 ) -> tuple[str, list]:
   """
   依據篩選條件組出 SQL 和參數列表。
@@ -630,7 +631,7 @@ def build_search_query(
     params.append(city)
 
   final_order = order_clause or default_order
-  sql = base_query + f' {final_order} {limit_clause}'
+  sql = base_query + f' {group_clause} {final_order} {limit_clause}'
   return sql, params
 
 # ---------------------------------------------------------------------------
@@ -661,16 +662,23 @@ def search_factories(
 
   order_clause = _SORT_ORDER_MAP.get(sort or '', '')
 
-  count_select = 'COUNT(*) AS cnt'
+  count_select = 'COUNT(DISTINCT f.tax_id) AS cnt'
   data_select = (
-    'f.id, f.tax_id, f.name_en, f.name_zh, '
+    'MIN(f.id) AS id, f.tax_id, '
+    'COALESCE(f.official_name_en, f.name_en) AS name_en, '
+    'MIN(f.name_zh) AS name_zh, '
     'f.industry_en, f.industry_zh, '
     'f.city_en, f.district_en, '
-    'f.address_zh, f.registration_date, '
-    'f.capital_amount, f.paid_in_capital, f.company_setup_date, f.findbiz_url, '
-    'f.products_en, f.products_zh, f.certifications_en, f.registered_address, '
-    'f.hidden_champion_score, '
-    'f.phone, f.email, f.website, f.stock_id, f.official_name_en, f.is_listed'
+    'MIN(f.address_zh) AS address_zh, MIN(f.registration_date) AS registration_date, '
+    'MAX(f.capital_amount) AS capital_amount, MAX(f.paid_in_capital) AS paid_in_capital, '
+    'MIN(f.company_setup_date) AS company_setup_date, MAX(f.findbiz_url) AS findbiz_url, '
+    'MAX(f.products_en) AS products_en, MAX(f.products_zh) AS products_zh, '
+    'MAX(f.certifications_en) AS certifications_en, MAX(f.registered_address) AS registered_address, '
+    'MAX(f.hidden_champion_score) AS hidden_champion_score, '
+    'MAX(f.phone) AS phone, MAX(f.email) AS email, MAX(f.website) AS website, '
+    'MAX(f.stock_id) AS stock_id, MAX(f.official_name_en) AS official_name_en, '
+    'MAX(f.is_listed) AS is_listed, '
+    'COUNT(*) AS factory_count'
   )
 
   count_sql, count_params = build_search_query(q, industry, city, select_clause=count_select)
@@ -679,6 +687,7 @@ def search_factories(
     select_clause=data_select,
     order_clause=order_clause,
     limit_clause=f'LIMIT {page_size} OFFSET {offset}',
+    group_clause='GROUP BY f.tax_id',
   )
 
   try:
@@ -725,6 +734,7 @@ def search_factories(
       'stock_id': row['stock_id'],
       'official_name_en': row['official_name_en'],
       'is_listed': row['is_listed'] or 0,
+      'factory_count': row['factory_count'] if 'factory_count' in row.keys() else 1,
     }
     for row in rows
   ]
@@ -875,7 +885,7 @@ def get_stats(
 
       _cf = "AND (phone IS NOT NULL AND phone != '' OR website IS NOT NULL AND website != '')"
 
-      cur.execute(f"SELECT COUNT(*) AS cnt FROM factories WHERE 1=1 {_cf}")
+      cur.execute(f"SELECT COUNT(DISTINCT tax_id) AS cnt FROM factories WHERE 1=1 {_cf}")
       total_factories = cur.fetchone()['cnt']
 
       cur.execute(f'SELECT COUNT(DISTINCT industry_en) AS cnt FROM factories WHERE industry_en != "" {_cf}')
