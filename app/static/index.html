@@ -1418,7 +1418,9 @@
 
         const displayNameEn = row.official_name_en ? escapeHtml(row.official_name_en) : (nameEn || '—')
 
-        const listedBadge = ''  // stock info moved to modal
+        const listedBadge = row.stock_id
+          ? `<span style="font-size:10px;font-weight:600;background:#e8f0fe;color:#1a73e8;border:1px solid #c5d5f8;border-radius:4px;padding:1px 5px;vertical-align:middle;margin-left:4px;">TW: ${row.stock_id}</span>`
+          : ''
 
         const rowId = `contact-${row.id || rawTaxId}`
 
