@@ -1120,6 +1120,12 @@
           <div class="city-chips" id="modalCityChips"></div>
         </div>
 
+        <!-- Similar Companies -->
+        <div class="modal-section" id="modalSectionSimilar" style="display:none">
+          <h3>Similar Companies</h3>
+          <div id="modalSimilarList" style="display:flex;flex-direction:column;gap:8px;"></div>
+        </div>
+
         <!-- Google fallback -->
         <div class="google-fallback">
           <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">&#128269; Search "<span id="qlGoogleLabel"></span>" on Google</a>
@@ -1846,6 +1852,38 @@
         ).join('')
 
         // show body
+        // ── Similar Companies ──────────────────────────────────
+        try {
+          const simResp = await fetch(`/api/similar/${encodeURIComponent(taxId)}?limit=5`, {
+            headers: { 'X-API-Key': API_KEY }
+          })
+          if (simResp.ok) {
+            const simData = await simResp.json()
+            const similar = simData.similar || []
+            if (similar.length > 0) {
+              document.getElementById('modalSimilarList').innerHTML = similar.map(s => {
+                const nameDisplay = escapeHtml(s.name_en || s.name_zh || s.tax_id)
+                const meta = [s.industry_en, s.city_en].filter(Boolean).join(' · ')
+                const contactBits = []
+                if (s.phone) contactBits.push(`📞 ${escapeHtml(s.phone)}`)
+                if (s.website) {
+                  const href = s.website.startsWith('http') ? s.website : 'https://' + s.website
+                  contactBits.push(`<a href="${escapeHtml(href)}" target="_blank" style="color:var(--primary);text-decoration:none;">🌐 Website</a>`)
+                }
+                return `<div style="padding:10px 12px;background:#f8f9fa;border-radius:8px;cursor:pointer;" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
+                  <div style="font-weight:600;font-size:13px;">${nameDisplay}</div>
+                  <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(meta)}</div>
+                  ${contactBits.length ? `<div style="font-size:11px;margin-top:4px;">${contactBits.join(' · ')}</div>` : ''}
+                  <div style="font-size:11px;color:#999;margin-top:2px;">Match: ${escapeHtml(s.match)}</div>
+                </div>`
+              }).join('')
+              showSection('modalSectionSimilar', true)
+            } else {
+              showSection('modalSectionSimilar', false)
+            }
+          }
+        } catch (_) { /* ignore similar fetch errors */ }
+
         document.getElementById('modalLoading').style.display = 'none'
         showSection('modalBody', true)
 

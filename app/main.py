@@ -618,6 +618,9 @@ def build_search_query(
     """
     default_order = 'ORDER BY f.id'
 
+  # Only show companies with contact info (phone or website)
+  base_query += " AND (f.phone IS NOT NULL AND f.phone != '' OR f.website IS NOT NULL AND f.website != '')"
+
   if industry:
     base_query += ' AND f.industry_en = ?'
     params.append(industry)
@@ -822,19 +825,23 @@ def get_filters(
     with get_db() as conn:
       cur = conn.cursor()
 
-      cur.execute("""
+      _contact_filter = "AND (phone IS NOT NULL AND phone != '' OR website IS NOT NULL AND website != '')"
+
+      cur.execute(f"""
         SELECT industry_en AS value, COUNT(*) AS count
         FROM factories
         WHERE industry_en IS NOT NULL AND industry_en != ''
+        {_contact_filter}
         GROUP BY industry_en
         ORDER BY count DESC
       """)
       industries = [{'value': row['value'], 'count': row['count']} for row in cur.fetchall()]
 
-      cur.execute("""
+      cur.execute(f"""
         SELECT city_en AS value, COUNT(*) AS count
         FROM factories
         WHERE city_en IS NOT NULL AND city_en != ''
+        {_contact_filter}
         GROUP BY city_en
         ORDER BY count DESC
       """)
@@ -866,13 +873,15 @@ def get_stats(
     with get_db() as conn:
       cur = conn.cursor()
 
-      cur.execute('SELECT COUNT(*) AS cnt FROM factories')
+      _cf = "AND (phone IS NOT NULL AND phone != '' OR website IS NOT NULL AND website != '')"
+
+      cur.execute(f"SELECT COUNT(*) AS cnt FROM factories WHERE 1=1 {_cf}")
       total_factories = cur.fetchone()['cnt']
 
-      cur.execute('SELECT COUNT(DISTINCT industry_en) AS cnt FROM factories WHERE industry_en != ""')
+      cur.execute(f'SELECT COUNT(DISTINCT industry_en) AS cnt FROM factories WHERE industry_en != "" {_cf}')
       industries_count = cur.fetchone()['cnt']
 
-      cur.execute('SELECT COUNT(DISTINCT city_en) AS cnt FROM factories WHERE city_en != ""')
+      cur.execute(f'SELECT COUNT(DISTINCT city_en) AS cnt FROM factories WHERE city_en != "" {_cf}')
       cities_count = cur.fetchone()['cnt']
 
       # 新表計數（表不存在時安全降級為 0）
@@ -2105,6 +2114,93 @@ def get_suggestions(
   # 依 count 降序，截取 limit 筆
   suggestions.sort(key=lambda x: x['count'], reverse=True)
   return {'suggestions': suggestions[:limit]}
+
+
+# ---------------------------------------------------------------------------
+# GET /api/similar/{tax_id} — Similar Companies
+# ---------------------------------------------------------------------------
+
+@app.get(
+  '/api/similar/{tax_id}',
+  summary='Similar companies',
+  description='根據產業和地區推薦類似公司（僅顯示有聯絡資訊的公司）。',
+)
+def get_similar_companies(
+  tax_id: str,
+  limit: int = Query(default=5, ge=1, le=20),
+  _auth: dict = Depends(verify_api_key),
+):
+  _cf = "AND (f.phone IS NOT NULL AND f.phone != '' OR f.website IS NOT NULL AND f.website != '')"
+  try:
+    with get_db() as conn:
+      cur = conn.cursor()
+
+      # Get the target company's industry and city
+      cur.execute('SELECT industry_en, city_en FROM factories WHERE tax_id = ? LIMIT 1', [tax_id])
+      target = cur.fetchone()
+      if not target:
+        raise HTTPException(status_code=404, detail='Company not found')
+
+      industry = target['industry_en'] or ''
+      city = target['city_en'] or ''
+
+      results = []
+
+      # 1. Same industry + same city (best match)
+      if industry and city:
+        cur.execute(f'''
+          SELECT DISTINCT f.tax_id, f.name_en, f.name_zh, f.industry_en, f.city_en,
+                 f.phone, f.website, f.official_name_en
+          FROM factories f
+          WHERE f.industry_en = ? AND f.city_en = ? AND f.tax_id != ?
+          {_cf}
+          ORDER BY f.capital_amount DESC NULLS LAST
+          LIMIT ?
+        ''', [industry, city, tax_id, limit])
+        for row in cur.fetchall():
+          results.append({
+            'tax_id': row['tax_id'],
+            'name_en': row['official_name_en'] or row['name_en'],
+            'name_zh': row['name_zh'],
+            'industry_en': row['industry_en'],
+            'city_en': row['city_en'],
+            'phone': row['phone'],
+            'website': row['website'],
+            'match': 'same industry & city',
+          })
+
+      # 2. Same industry, different city (if not enough)
+      if len(results) < limit and industry:
+        seen = {r['tax_id'] for r in results}
+        seen.add(tax_id)
+        placeholders = ','.join(['?'] * len(seen))
+        cur.execute(f'''
+          SELECT DISTINCT f.tax_id, f.name_en, f.name_zh, f.industry_en, f.city_en,
+                 f.phone, f.website, f.official_name_en
+          FROM factories f
+          WHERE f.industry_en = ? AND f.tax_id NOT IN ({placeholders})
+          {_cf}
+          ORDER BY f.capital_amount DESC NULLS LAST
+          LIMIT ?
+        ''', [industry] + list(seen) + [limit - len(results)])
+        for row in cur.fetchall():
+          results.append({
+            'tax_id': row['tax_id'],
+            'name_en': row['official_name_en'] or row['name_en'],
+            'name_zh': row['name_zh'],
+            'industry_en': row['industry_en'],
+            'city_en': row['city_en'],
+            'phone': row['phone'],
+            'website': row['website'],
+            'match': 'same industry',
+          })
+
+  except HTTPException:
+    raise
+  except Exception as e:
+    raise HTTPException(status_code=500, detail=f'Database error: {e}')
+
+  return {'similar': results[:limit]}
 
 
 # ---------------------------------------------------------------------------
