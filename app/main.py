@@ -707,12 +707,34 @@ def search_factories(
   except Exception as e:
     raise HTTPException(status_code=500, detail=f'Database error: {e}')
 
+  def _clean_company_name_zh(name: str) -> str:
+    """Remove factory suffix from Chinese company name to show parent company."""
+    if not name:
+      return name
+    import re as _r
+    # Extract parent company name: everything up to and including 有限公司/股份有限公司
+    m = _r.search(r'^(.+?(?:股份有限公司|有限公司))', name)
+    if m:
+      return m.group(1)
+    # If no company suffix found, return original
+    return name
+
+  def _clean_company_name_en(name: str) -> str:
+    """Remove factory suffix from English company name."""
+    if not name:
+      return name
+    import re as _r
+    return _r.sub(
+      r'\s*(Plant\s*\d+|Factory\s*\d*|Fab\s*\d+|Branch.*|[A-Z]?\d+[A-Z]?\s*Plant.*)$',
+      '', name, flags=_r.IGNORECASE
+    ).strip()
+
   results = [
     {
       'id': row['id'],
       'tax_id': row['tax_id'],
-      'name_en': row['name_en'],
-      'name_zh': row['name_zh'],
+      'name_en': _clean_company_name_en(row['name_en']),
+      'name_zh': _clean_company_name_zh(row['name_zh']),
       'industry_en': row['industry_en'],
       'industry_zh': row['industry_zh'],
       'city_en': row['city_en'],

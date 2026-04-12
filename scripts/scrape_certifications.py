@@ -62,7 +62,7 @@ CERT_PATTERNS = [
     # Textile
     (r'OEKO[\-\s]*TEX', 'OEKO-TEX'),
     (r'bluesign', 'bluesign'),
-    (r'WRAP', 'WRAP'),
+    # WRAP removed - too many false positives (common English word)
     # Electronics
     (r'QC\s*080000', 'QC 080000'),
     (r'Sony\s*G[Pp]', 'Sony GP'),
