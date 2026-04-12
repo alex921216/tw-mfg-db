@@ -454,7 +454,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.55);
+      background: rgba(0,0,0,0.45);
       z-index: 1000;
       overflow-y: auto;
       padding: 40px 20px;
@@ -465,52 +465,54 @@
       align-items: flex-start;
     }
     .modal-content {
-      background: white;
-      border-radius: 16px;
-      max-width: 640px;
+      background: #fff;
+      border-radius: 12px;
+      max-width: 620px;
       width: 100%;
       padding: 0;
       position: relative;
-      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
-      animation: modalFadeIn 0.2s ease;
+      box-shadow: 0 8px 40px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.06);
+      animation: modalFadeIn 0.18s ease;
       overflow: hidden;
     }
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(-16px); }
+      from { opacity: 0; transform: translateY(-12px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .modal-close {
       position: absolute;
-      top: 16px; right: 18px;
-      background: rgba(0,0,0,0.06); border: none;
-      font-size: 16px; cursor: pointer;
-      color: #666;
+      top: 18px; right: 20px;
+      background: none; border: none;
+      font-size: 14px; cursor: pointer;
+      color: #aaa;
       line-height: 1;
-      transition: all 0.15s;
-      padding: 6px 10px;
-      border-radius: 8px;
+      transition: color 0.15s;
+      padding: 4px 6px;
+      border-radius: 6px;
       z-index: 1;
     }
-    .modal-close:hover { background: rgba(0,0,0,0.12); color: var(--text); }
+    .modal-close:hover { color: #333; }
 
     /* Modal header */
     .modal-header {
-      padding: 28px 32px 20px;
-      background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
-      border-bottom: 1px solid #e2e8f0;
+      padding: 32px 36px 24px;
+      background: #fff;
+      border-bottom: 1px solid #ebebeb;
     }
     .modal-name-en {
-      font-size: 20px;
+      font-size: 22px;
       font-weight: 700;
-      color: var(--text);
-      margin-bottom: 4px;
+      color: #111;
+      margin-bottom: 6px;
       line-height: 1.3;
-      padding-right: 40px;
+      padding-right: 44px;
+      letter-spacing: -0.3px;
     }
     .modal-name-zh {
       font-size: 13px;
-      color: var(--text-secondary);
-      margin-bottom: 12px;
+      color: #888;
+      margin-bottom: 14px;
+      font-weight: 400;
     }
     .modal-badges {
       display: flex;
@@ -519,127 +521,118 @@
     }
     .modal-badge {
       display: inline-block;
-      padding: 4px 12px;
-      border-radius: 6px;
+      padding: 3px 10px;
+      border-radius: 4px;
       font-size: 11px;
-      font-weight: 600;
-      letter-spacing: 0.3px;
+      font-weight: 500;
+      letter-spacing: 0.2px;
     }
-    .modal-badge-industry { background: #1a56db; color: #fff; }
-    .modal-badge-city     { background: #047857; color: #fff; }
-    .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; text-decoration: none; }
-    .modal-badge-status   { background: #f1f3f4; color: #5f6368; }
+    .modal-badge-industry { background: #f0f4ff; color: #2563eb; }
+    .modal-badge-city     { background: #f0fdf4; color: #16a34a; }
+    .modal-badge-listed   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; text-decoration: none; }
+    .modal-badge-status   { background: #f8fafc; color: #64748b; }
 
     /* Modal body */
-    #modalBody { padding: 0 32px 28px; }
+    #modalBody { padding: 0 36px 32px; }
 
     /* Google fallback link */
     .google-fallback {
-      margin-top: 20px;
-      padding: 12px 0;
-      border-top: 1px solid #e2e8f0;
+      margin-top: 24px;
+      padding-top: 16px;
       font-size: 12px;
-      color: var(--text-secondary);
+      color: #aaa;
       text-align: center;
     }
     .google-fallback a {
-      color: var(--primary);
+      color: #aaa;
       text-decoration: none;
     }
-    .google-fallback a:hover { text-decoration: underline; }
+    .google-fallback a:hover { color: var(--primary); }
 
     /* Modal sections */
     .modal-section {
-      margin-top: 0;
-      padding: 20px 0 4px;
-      border-top: 1px solid #f0f0f0;
+      margin-top: 24px;
+      padding-top: 0;
     }
-    .modal-section:first-child { border-top: none; }
     .modal-section h3 {
       font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
+      font-weight: 600;
+      color: #999;
       text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
+      letter-spacing: 0.8px;
+      margin-bottom: 14px;
     }
 
-    /* Contact section */
-    .contact-lines {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
-    }
-    .contact-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
+    /* Contact section — inline with dots */
+    .contact-inline {
       font-size: 13px;
-      color: var(--text);
-      padding: 8px 12px;
-      background: #f8fafc;
-      border-radius: 8px;
-      border: 1px solid #e2e8f0;
+      color: #333;
+      line-height: 2;
+      word-break: break-word;
     }
-    .contact-line-icon {
-      flex-shrink: 0;
-      font-size: 11px;
-      font-weight: 700;
-      color: #64748b;
-      min-width: 36px;
+    .contact-inline a {
+      color: #333;
+      text-decoration: none;
     }
-    .contact-line a { color: var(--primary); text-decoration: none; font-weight: 500; }
-    .contact-line a:hover { text-decoration: underline; }
+    .contact-inline a:hover {
+      color: var(--primary);
+      text-decoration: underline;
+    }
+    .contact-sep {
+      color: #ccc;
+      margin: 0 8px;
+      user-select: none;
+    }
 
     /* Snapshot grid */
     .snapshot-grid {
       display: grid;
-      grid-template-columns: 120px 1fr;
+      grid-template-columns: 110px 1fr;
       gap: 0;
       font-size: 13px;
     }
     .snapshot-label {
-      color: #64748b;
+      color: #999;
       font-size: 12px;
-      font-weight: 600;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
+      font-weight: 400;
+      padding: 7px 0;
     }
     .snapshot-value {
-      color: var(--text);
-      font-weight: 500;
-      padding: 8px 0;
-      border-bottom: 1px solid #f1f5f9;
+      color: #111;
+      font-weight: 400;
+      padding: 7px 0;
     }
-    .snapshot-value a { font-weight: 600; }
+    .snapshot-value a {
+      color: var(--primary);
+      text-decoration: none;
+      font-weight: 400;
+    }
+    .snapshot-value a:hover { text-decoration: underline; }
 
     /* Certification chips */
-    .cert-chips { display: flex; flex-wrap: wrap; gap: 8px; }
+    .cert-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .cert-chip {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
-      padding: 6px 14px;
-      border-radius: 8px;
+      padding: 3px 10px;
+      border-radius: 4px;
       font-size: 12px;
-      font-weight: 600;
-      background: #ecfdf5;
-      color: #065f46;
-      border: 1px solid #a7f3d0;
+      font-weight: 400;
+      background: #fff;
+      color: #444;
+      border: 1px solid #ddd;
     }
-    .cert-chip-check { color: #059669; font-size: 13px; }
 
     /* Awards list */
-    .awards-list { display: flex; flex-direction: column; gap: 6px; }
+    .awards-list { display: flex; flex-direction: column; gap: 8px; }
     .award-item {
       display: flex;
       align-items: baseline;
       gap: 8px;
       font-size: 13px;
     }
-    .award-item-icon { flex-shrink: 0; }
-    .award-item-name { color: var(--text); font-weight: 500; }
-    .award-item-year { color: #9aa0a6; font-size: 12px; margin-left: auto; flex-shrink: 0; }
+    .award-item-name { color: #333; font-weight: 400; }
+    .award-item-year { color: #bbb; font-size: 12px; margin-left: auto; flex-shrink: 0; }
 
     /* Supply chain */
     .supply-group { margin-bottom: 12px; }
@@ -691,10 +684,10 @@
     @media (max-width: 480px) {
       .modal-overlay { padding: 0; }
       .modal-content { border-radius: 0; min-height: 100vh; }
-      .modal-header { padding: 20px 20px 16px; }
+      .modal-header { padding: 24px 20px 18px; }
       #modalBody { padding: 0 20px 24px; }
-      .contact-lines { grid-template-columns: 1fr; }
-      .snapshot-grid { grid-template-columns: 120px 1fr; }
+      .snapshot-grid { grid-template-columns: 100px 1fr; }
+      .contact-sep { display: inline; }
     }
 
     /* ── Award Badge (profile sidebar) ── */
@@ -1109,19 +1102,15 @@
         <div id="modalProfile" style="
           display: none;
           margin: 20px 0 0;
-          padding: 16px 20px;
-          background: #f8fafc;
-          border-radius: 10px;
-          border: 1px solid #e2e8f0;
-          font-size: 13px;
-          line-height: 1.8;
-          color: #334155;
+          font-size: 14px;
+          line-height: 1.7;
+          color: #333;
         "></div>
 
         <!-- Contact (only shown when phone/email/website exists) -->
         <div class="modal-section" id="modalSectionContact" style="display:none">
           <h3>Contact</h3>
-          <div class="contact-lines" id="modalContactLines"></div>
+          <div id="modalContactLines"></div>
         </div>
 
         <!-- Company Snapshot -->
@@ -1165,7 +1154,7 @@
         <!-- Similar Companies -->
         <div class="modal-section" id="modalSectionSimilar" style="display:none">
           <h3>Similar Companies</h3>
-          <div id="modalSimilarList" style="display:flex;flex-direction:column;gap:8px;"></div>
+          <div id="modalSimilarList" style="display:flex;flex-direction:column;gap:10px;"></div>
         </div>
 
         <!-- Google fallback -->
@@ -1718,29 +1707,26 @@
           if (phone && email && website) break
         }
 
-        // Contact section — only phone / email / website (address is in Snapshot)
-        const contactLines = []
+        // Contact section — inline with · separator
+        const contactParts = []
         if (phone) {
-          contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">Tel:</span>${escapeHtml(formatPhoneIntl(phone))}</div>`
-          )
-        }
-        if (email) {
-          contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">Email:</span>` +
-            `<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></div>`
-          )
+          const phoneFormatted = escapeHtml(formatPhoneIntl(phone))
+          contactParts.push(`<a href="tel:${phoneFormatted}">${phoneFormatted}</a>`)
         }
         if (website) {
           const href = website.startsWith('http') ? website : `https://${website}`
-          contactLines.push(
-            `<div class="contact-line"><span class="contact-line-icon">Web:</span>` +
-            `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(website)}</a></div>`
-          )
+          // show domain only
+          let displayDomain = website.replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
+          contactParts.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayDomain)}</a>`)
+        }
+        if (email) {
+          contactParts.push(`<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`)
         }
 
-        const hasContactInfo = contactLines.length > 0
-        document.getElementById('modalContactLines').innerHTML = contactLines.join('')
+        const hasContactInfo = contactParts.length > 0
+        document.getElementById('modalContactLines').innerHTML = hasContactInfo
+          ? `<div class="contact-inline">${contactParts.join('<span class="contact-sep">·</span>')}</div>`
+          : ''
         showSection('modalSectionContact', hasContactInfo)
 
         // ── Company Snapshot ──────────────────────────────────
@@ -1790,7 +1776,7 @@
           const yahooUrl = `https://tw.stock.yahoo.com/quote/${listedFactory.stock_id}/profile`
           snapshotRows.push([
             'Stock',
-            `<a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" style="color:var(--primary);font-weight:600;">TW: ${escapeHtml(listedFactory.stock_id)} - View on Yahoo Finance &rarr;</a>`
+            `TW: ${escapeHtml(listedFactory.stock_id)} <a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" style="color:#999;font-size:11px;margin-left:6px;text-decoration:none;">Yahoo Finance &rarr;</a>`
           ])
         }
 
@@ -1809,7 +1795,7 @@
         }
         if (allCerts.size > 0) {
           document.getElementById('modalCertChips').innerHTML = [...allCerts].map(cert =>
-            `<span class="cert-chip"><span class="cert-chip-check">&#10003;</span>${escapeHtml(cert)}</span>`
+            `<span class="cert-chip">${escapeHtml(cert)}</span>`
           ).join('')
           showSection('modalSectionCerts', true)
         } else {
@@ -1819,13 +1805,10 @@
         // ── Awards & Programs ─────────────────────────────────
         if (govRecords.length > 0) {
           const sorted = [...govRecords].sort((a, b) => (b.year || 0) - (a.year || 0))
-          const iconMap = { award: '*', subsidy: '$', certification: 'Cert:' }
           document.getElementById('modalAwardsList').innerHTML = sorted.map(rec => {
-            const icon = iconMap[rec.record_type] || '*'
             const name = escapeHtml(rec.program_name_en || rec.program_name || '—')
             const year = rec.year ? escapeHtml(String(rec.year)) : ''
             return `<div class="award-item">
-              <span class="award-item-icon">${icon}</span>
               <span class="award-item-name">${name}</span>
               ${year ? `<span class="award-item-year">${year}</span>` : ''}
             </div>`
@@ -1927,17 +1910,9 @@
               document.getElementById('modalSimilarList').innerHTML = similar.map(s => {
                 const nameDisplay = escapeHtml(s.name_en || s.name_zh || s.tax_id)
                 const meta = [s.industry_en, s.city_en].filter(Boolean).join(' · ')
-                const contactBits = []
-                if (s.phone) contactBits.push(`Tel:  ${escapeHtml(s.phone)}`)
-                if (s.website) {
-                  const href = s.website.startsWith('http') ? s.website : 'https://' + s.website
-                  contactBits.push(`<a href="${escapeHtml(href)}" target="_blank" style="color:var(--primary);text-decoration:none;">Web:  Website</a>`)
-                }
-                return `<div style="padding:10px 12px;background:#f8f9fa;border-radius:8px;cursor:pointer;" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
-                  <div style="font-weight:600;font-size:13px;">${nameDisplay}</div>
-                  <div style="font-size:12px;color:var(--text-secondary);margin-top:2px;">${escapeHtml(meta)}</div>
-                  ${contactBits.length ? `<div style="font-size:11px;margin-top:4px;">${contactBits.join(' · ')}</div>` : ''}
-                  <div style="font-size:11px;color:#999;margin-top:2px;">Match: ${escapeHtml(s.match)}</div>
+                return `<div style="padding:12px 14px;background:#fff;border:1px solid #ebebeb;border-radius:8px;cursor:pointer;transition:box-shadow 0.15s;" onmouseenter="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'" onmouseleave="this.style.boxShadow='none'" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
+                  <div style="font-weight:500;font-size:13px;color:#111;">${nameDisplay}</div>
+                  ${meta ? `<div style="font-size:12px;color:#999;margin-top:3px;">${escapeHtml(meta)}</div>` : ''}
                 </div>`
               }).join('')
               showSection('modalSectionSimilar', true)
