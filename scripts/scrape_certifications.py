@@ -106,35 +106,23 @@ def scrape_site_certs(page, website: str) -> list[str]:
         return []
 
     found_certs = set()
-    pages_to_check = [base]
 
-    # Add cert-related subpages
-    for path in CERT_PATHS:
-        pages_to_check.append(base + path)
+    # Only check homepage — fast mode
+    try:
+        resp = page.goto(base, timeout=8000, wait_until='domcontentloaded')
+        if not resp or resp.status != 200:
+            return []
+        page.wait_for_timeout(300)
+        text = page.content()
+        if len(text) < 200:
+            return []
 
-    checked = 0
-    for url in pages_to_check:
-        if checked >= 4:  # max 4 pages per company
-            break
-        try:
-            resp = page.goto(url, timeout=10000, wait_until='domcontentloaded')
-            if not resp or resp.status != 200:
-                continue
-            page.wait_for_timeout(1500)
-            text = page.content()
-            if len(text) < 200:
-                continue
-            checked += 1
+        for pattern, cert_name in CERT_PATTERNS:
+            if re.search(pattern, text, re.IGNORECASE):
+                found_certs.add(cert_name)
 
-            for pattern, cert_name in CERT_PATTERNS:
-                if re.search(pattern, text, re.IGNORECASE):
-                    found_certs.add(cert_name)
-
-            if found_certs:
-                break
-
-        except Exception:
-            continue
+    except Exception:
+        pass
 
     return sorted(found_certs)
 
@@ -219,6 +207,8 @@ def main():
     pw = sync_playwright().start()
     browser = pw.chromium.launch(headless=True)
     page = browser.new_page()
+    page.set_default_navigation_timeout(8000)
+    page.set_default_timeout(5000)
 
     done = []
     stats = {'found': 0, 'empty': 0, 'error': 0}
