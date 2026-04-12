@@ -52,12 +52,12 @@ CERT_PATTERNS = [
     (r'CE\s*[Mm]ark', 'CE Marking'),
     (r'UL\s*[Ll]ist', 'UL Listed'),
     (r'UL\s*[Rr]ecog', 'UL Recognized'),
-    (r'RoHS', 'RoHS'),
-    (r'REACH', 'REACH'),
+    (r'RoHS\s*[Cc]ompl', 'RoHS'),  # require "compliant" to avoid false positive
+    # REACH removed — too many false positives
     # Food
-    (r'HACCP', 'HACCP'),
+    (r'HACCP\s*[Cc]ertif', 'HACCP'),  # require "certified" context
     (r'FSSC\s*22000', 'FSSC 22000'),
-    (r'GMP', 'GMP'),
+    # GMP removed — too many false positives
     (r'FDA\s*[Rr]egist', 'FDA Registered'),
     # Textile
     (r'OEKO[\-\s]*TEX', 'OEKO-TEX'),
@@ -66,10 +66,10 @@ CERT_PATTERNS = [
     # Electronics
     (r'QC\s*080000', 'QC 080000'),
     (r'Sony\s*G[Pp]', 'Sony GP'),
-    (r'IECQ', 'IECQ'),
+    (r'IECQ\s*QC', 'IECQ'),  # require QC context
     # General
-    (r'TUV', 'TUV'),
-    (r'SGS', 'SGS Certified'),
+    # TUV removed — too many false positives
+    # SGS removed — too many false positives
 ]
 
 # Pages to check beyond homepage
