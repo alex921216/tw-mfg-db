@@ -466,13 +466,14 @@
     }
     .modal-content {
       background: white;
-      border-radius: 12px;
-      max-width: 680px;
+      border-radius: 16px;
+      max-width: 640px;
       width: 100%;
-      padding: 28px 32px 32px;
+      padding: 0;
       position: relative;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+      box-shadow: 0 24px 80px rgba(0,0,0,0.25);
       animation: modalFadeIn 0.2s ease;
+      overflow: hidden;
     }
     @keyframes modalFadeIn {
       from { opacity: 0; transform: translateY(-16px); }
@@ -480,53 +481,63 @@
     }
     .modal-close {
       position: absolute;
-      top: 14px; right: 18px;
-      background: none; border: none;
-      font-size: 20px; cursor: pointer;
-      color: #999;
+      top: 16px; right: 18px;
+      background: rgba(0,0,0,0.06); border: none;
+      font-size: 16px; cursor: pointer;
+      color: #666;
       line-height: 1;
-      transition: color 0.15s;
-      padding: 4px;
+      transition: all 0.15s;
+      padding: 6px 10px;
+      border-radius: 8px;
+      z-index: 1;
     }
-    .modal-close:hover { color: var(--text); }
+    .modal-close:hover { background: rgba(0,0,0,0.12); color: var(--text); }
 
     /* Modal header */
-    .modal-header { padding-right: 36px; margin-bottom: 14px; }
+    .modal-header {
+      padding: 28px 32px 20px;
+      background: linear-gradient(135deg, #f8fafc 0%, #eef2f7 100%);
+      border-bottom: 1px solid #e2e8f0;
+    }
     .modal-name-en {
-      font-size: 19px;
-      font-weight: 600;
+      font-size: 20px;
+      font-weight: 700;
       color: var(--text);
-      margin-bottom: 3px;
+      margin-bottom: 4px;
       line-height: 1.3;
+      padding-right: 40px;
     }
     .modal-name-zh {
-      font-size: 14px;
+      font-size: 13px;
       color: var(--text-secondary);
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
     .modal-badges {
       display: flex;
       flex-wrap: wrap;
       gap: 6px;
-      margin-top: 8px;
     }
     .modal-badge {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
-      font-size: 12px;
-      font-weight: 500;
+      padding: 4px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      font-weight: 600;
+      letter-spacing: 0.3px;
     }
-    .modal-badge-industry { background: #1a73e8; color: #fff; }
-    .modal-badge-city     { background: #1e8e3e; color: #fff; }
-    .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; }
+    .modal-badge-industry { background: #1a56db; color: #fff; }
+    .modal-badge-city     { background: #047857; color: #fff; }
+    .modal-badge-listed   { background: #e8f0fe; color: #1a73e8; border: 1px solid #c5d5f8; text-decoration: none; }
     .modal-badge-status   { background: #f1f3f4; color: #5f6368; }
+
+    /* Modal body */
+    #modalBody { padding: 0 32px 28px; }
 
     /* Google fallback link */
     .google-fallback {
-      margin-top: 16px;
-      padding-top: 14px;
-      border-top: 1px solid #ebebeb;
+      margin-top: 20px;
+      padding: 12px 0;
+      border-top: 1px solid #e2e8f0;
       font-size: 12px;
       color: var(--text-secondary);
       text-align: center;
@@ -540,56 +551,83 @@
     /* Modal sections */
     .modal-section {
       margin-top: 0;
-      padding-top: 16px;
-      border-top: 1px solid #ebebeb;
+      padding: 20px 0 4px;
+      border-top: 1px solid #f0f0f0;
     }
+    .modal-section:first-child { border-top: none; }
     .modal-section h3 {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 700;
-      color: #9aa0a6;
+      color: #64748b;
       text-transform: uppercase;
-      letter-spacing: 0.8px;
-      margin-bottom: 10px;
+      letter-spacing: 1px;
+      margin-bottom: 12px;
     }
 
     /* Contact section */
-    .contact-lines { display: flex; flex-direction: column; gap: 6px; }
+    .contact-lines {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
     .contact-line {
       display: flex;
-      align-items: baseline;
+      align-items: center;
       gap: 8px;
       font-size: 13px;
       color: var(--text);
+      padding: 8px 12px;
+      background: #f8fafc;
+      border-radius: 8px;
+      border: 1px solid #e2e8f0;
     }
-    .contact-line-icon { flex-shrink: 0; font-size: 14px; }
-    .contact-line a { color: var(--primary); text-decoration: none; }
+    .contact-line-icon {
+      flex-shrink: 0;
+      font-size: 11px;
+      font-weight: 700;
+      color: #64748b;
+      min-width: 36px;
+    }
+    .contact-line a { color: var(--primary); text-decoration: none; font-weight: 500; }
     .contact-line a:hover { text-decoration: underline; }
 
     /* Snapshot grid */
     .snapshot-grid {
       display: grid;
-      grid-template-columns: 140px 1fr;
-      gap: 8px 12px;
+      grid-template-columns: 120px 1fr;
+      gap: 0;
       font-size: 13px;
     }
-    .snapshot-label { color: #9aa0a6; font-size: 12px; }
-    .snapshot-value { color: var(--text); font-weight: 500; }
+    .snapshot-label {
+      color: #64748b;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .snapshot-value {
+      color: var(--text);
+      font-weight: 500;
+      padding: 8px 0;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .snapshot-value a { font-weight: 600; }
 
     /* Certification chips */
-    .cert-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+    .cert-chips { display: flex; flex-wrap: wrap; gap: 8px; }
     .cert-chip {
       display: inline-flex;
       align-items: center;
-      gap: 4px;
-      padding: 4px 10px;
-      border-radius: 20px;
+      gap: 5px;
+      padding: 6px 14px;
+      border-radius: 8px;
       font-size: 12px;
-      font-weight: 500;
-      background: #e6f4ea;
-      color: #1e7e34;
-      border: 1px solid #c3e6cb;
+      font-weight: 600;
+      background: #ecfdf5;
+      color: #065f46;
+      border: 1px solid #a7f3d0;
     }
-    .cert-chip-check { color: #1e8e3e; font-size: 13px; }
+    .cert-chip-check { color: #059669; font-size: 13px; }
 
     /* Awards list */
     .awards-list { display: flex; flex-direction: column; gap: 6px; }
@@ -652,7 +690,10 @@
 
     @media (max-width: 480px) {
       .modal-overlay { padding: 0; }
-      .modal-content { border-radius: 0; min-height: 100vh; padding: 20px 20px 28px; }
+      .modal-content { border-radius: 0; min-height: 100vh; }
+      .modal-header { padding: 20px 20px 16px; }
+      #modalBody { padding: 0 20px 24px; }
+      .contact-lines { grid-template-columns: 1fr; }
       .snapshot-grid { grid-template-columns: 120px 1fr; }
     }
 
@@ -1067,13 +1108,14 @@
         <!-- Company Profile (always shown when available) -->
         <div id="modalProfile" style="
           display: none;
-          margin: 12px 0 16px;
-          padding: 14px 16px;
-          background: #f8f9fa;
-          border-radius: 8px;
+          margin: 20px 0 0;
+          padding: 16px 20px;
+          background: #f8fafc;
+          border-radius: 10px;
+          border: 1px solid #e2e8f0;
           font-size: 13px;
-          line-height: 1.7;
-          color: #333;
+          line-height: 1.8;
+          color: #334155;
         "></div>
 
         <!-- Contact (only shown when phone/email/website exists) -->
