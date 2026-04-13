@@ -1876,12 +1876,13 @@
         showSection('modalSectionContact', hasContactInfo)
 
         // ── Quick Facts + Company Details ─────────────────────
-        // earliest registration date across all factories
+        // Use company_setup_date (公司成立日) NOT registration_date (工廠登記日)
         let earliestDate = null
         for (const fc of factories) {
-          if (fc.registration_date) {
-            if (!earliestDate || fc.registration_date < earliestDate) {
-              earliestDate = fc.registration_date
+          const setupDate = fc.company_setup_date || fc.registration_date
+          if (setupDate) {
+            if (!earliestDate || setupDate < earliestDate) {
+              earliestDate = setupDate
             }
           }
         }
