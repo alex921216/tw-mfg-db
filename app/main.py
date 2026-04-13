@@ -292,9 +292,9 @@ def _migrate_search_tags(conn: sqlite3.Connection) -> None:
   row = conn.execute(
     "SELECT sql FROM sqlite_master WHERE name = 'factories_fts'"
   ).fetchone()
-  fts_has_search_tags = row and 'search_tags' in (row[0] or '')
+  fts_has_certs = row and 'certifications_en' in (row[0] or '')
 
-  if not fts_has_search_tags:
+  if not fts_has_certs:
     # FTS5 不支援 ALTER，需要 DROP 重建
     conn.execute('DROP TABLE IF EXISTS factories_fts')
     conn.execute("""
@@ -304,6 +304,7 @@ def _migrate_search_tags(conn: sqlite3.Connection) -> None:
           city_en,
           district_en,
           search_tags,
+          certifications_en,
           content='factories',
           content_rowid='id'
       )
