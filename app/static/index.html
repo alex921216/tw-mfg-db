@@ -454,7 +454,7 @@
       display: none;
       position: fixed;
       top: 0; left: 0; right: 0; bottom: 0;
-      background: rgba(0,0,0,0.45);
+      background: rgba(0,0,0,0.5);
       z-index: 1000;
       overflow-y: auto;
       padding: 40px 20px;
@@ -466,52 +466,55 @@
     }
     .modal-content {
       background: #fff;
-      border-radius: 12px;
-      max-width: 620px;
+      border-radius: 4px;
+      max-width: 720px;
       width: 100%;
       padding: 0;
       position: relative;
-      box-shadow: 0 8px 40px rgba(0,0,0,0.14), 0 1px 4px rgba(0,0,0,0.06);
+      box-shadow: 0 12px 48px rgba(0,0,0,0.18), 0 2px 8px rgba(0,0,0,0.08);
       animation: modalFadeIn 0.18s ease;
       overflow: hidden;
     }
     @keyframes modalFadeIn {
-      from { opacity: 0; transform: translateY(-12px); }
+      from { opacity: 0; transform: translateY(-10px); }
       to   { opacity: 1; transform: translateY(0); }
     }
     .modal-close {
       position: absolute;
-      top: 18px; right: 20px;
-      background: none; border: none;
-      font-size: 14px; cursor: pointer;
-      color: #aaa;
+      top: 16px; right: 16px;
+      background: rgba(255,255,255,0.15); border: none;
+      font-size: 12px; cursor: pointer;
+      color: rgba(255,255,255,0.7);
       line-height: 1;
-      transition: color 0.15s;
-      padding: 4px 6px;
-      border-radius: 6px;
-      z-index: 1;
+      transition: color 0.15s, background 0.15s;
+      padding: 5px 7px;
+      border-radius: 4px;
+      z-index: 2;
     }
-    .modal-close:hover { color: #333; }
+    .modal-close:hover {
+      color: #fff;
+      background: rgba(255,255,255,0.25);
+    }
 
-    /* Modal header */
+    /* Modal header bar */
     .modal-header {
-      padding: 32px 36px 24px;
-      background: #fff;
-      border-bottom: 1px solid #ebebeb;
+      padding: 28px 32px 24px;
+      background: #0f172a;
+      position: relative;
     }
     .modal-name-en {
-      font-size: 22px;
+      font-size: 24px;
       font-weight: 700;
-      color: #111;
-      margin-bottom: 6px;
-      line-height: 1.3;
-      padding-right: 44px;
-      letter-spacing: -0.3px;
+      color: #fff;
+      margin-bottom: 4px;
+      line-height: 1.25;
+      padding-right: 40px;
+      letter-spacing: -0.5px;
     }
     .modal-name-zh {
       font-size: 13px;
-      color: #888;
-      margin-bottom: 14px;
+      color: rgba(255,255,255,0.55);
+      margin-bottom: 16px;
       font-weight: 400;
     }
     .modal-badges {
@@ -522,105 +525,163 @@
     .modal-badge {
       display: inline-block;
       padding: 3px 10px;
-      border-radius: 4px;
+      border-radius: 3px;
       font-size: 11px;
       font-weight: 500;
-      letter-spacing: 0.2px;
+      letter-spacing: 0.3px;
     }
-    .modal-badge-industry { background: #f0f4ff; color: #2563eb; }
-    .modal-badge-city     { background: #f0fdf4; color: #16a34a; }
-    .modal-badge-listed   { background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; text-decoration: none; }
-    .modal-badge-status   { background: #f8fafc; color: #64748b; }
+    .modal-badge-industry {
+      background: rgba(255,255,255,0.12);
+      color: rgba(255,255,255,0.9);
+      border: 1px solid rgba(255,255,255,0.2);
+    }
+    .modal-badge-city {
+      background: rgba(22,163,74,0.25);
+      color: #86efac;
+      border: 1px solid rgba(22,163,74,0.4);
+    }
+    .modal-badge-listed {
+      background: rgba(0,102,204,0.3);
+      color: #93c5fd;
+      border: 1px solid rgba(0,102,204,0.5);
+      text-decoration: none;
+    }
+    .modal-badge-status {
+      background: rgba(255,255,255,0.1);
+      color: rgba(255,255,255,0.6);
+    }
 
     /* Modal body */
-    #modalBody { padding: 0 36px 32px; }
+    #modalBody { padding: 0; }
 
     /* Google fallback link */
     .google-fallback {
-      margin-top: 24px;
+      margin-top: 28px;
       padding-top: 16px;
+      border-top: 1px solid #f1f5f9;
       font-size: 12px;
-      color: #aaa;
+      color: #94a3b8;
       text-align: center;
     }
     .google-fallback a {
-      color: #aaa;
+      color: #94a3b8;
       text-decoration: none;
     }
-    .google-fallback a:hover { color: var(--primary); }
+    .google-fallback a:hover { color: #0066cc; }
+
+    /* Quick Facts strip */
+    .quick-facts {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin: 24px 0 0;
+    }
+    .quick-fact-card {
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      padding: 14px 16px 12px;
+    }
+    .quick-fact-value {
+      font-size: 20px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.2;
+      margin-bottom: 4px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .quick-fact-label {
+      font-size: 10px;
+      font-weight: 600;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
 
     /* Modal sections */
     .modal-section {
-      margin-top: 24px;
-      padding-top: 0;
+      margin-top: 28px;
     }
-    .modal-section h3 {
+    .modal-section-title {
       font-size: 11px;
       font-weight: 600;
-      color: #999;
+      color: #64748b;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      margin-bottom: 14px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+
+    /* About / Overview */
+    .modal-overview {
+      font-size: 14px;
+      line-height: 1.7;
+      color: #334155;
+    }
+
+    /* Contact section */
+    .contact-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    .contact-field {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+    }
+    .contact-field-label {
+      font-size: 10px;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.8px;
-      margin-bottom: 14px;
+      color: #94a3b8;
     }
-
-    /* Contact section — inline with dots */
-    .contact-inline {
+    .contact-field-value {
       font-size: 13px;
-      color: #333;
-      line-height: 2;
+      color: #334155;
       word-break: break-word;
     }
-    .contact-inline a {
-      color: #333;
+    .contact-field-value a {
+      color: #0066cc;
       text-decoration: none;
     }
-    .contact-inline a:hover {
-      color: var(--primary);
-      text-decoration: underline;
-    }
-    .contact-sep {
-      color: #ccc;
-      margin: 0 8px;
-      user-select: none;
-    }
+    .contact-field-value a:hover { text-decoration: underline; }
 
-    /* Snapshot grid */
-    .snapshot-grid {
-      display: grid;
-      grid-template-columns: 110px 1fr;
-      gap: 0;
-      font-size: 13px;
+    /* Certification badges (LinkedIn style) */
+    .cert-badges-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
     }
-    .snapshot-label {
-      color: #999;
-      font-size: 12px;
-      font-weight: 400;
-      padding: 7px 0;
-    }
-    .snapshot-value {
-      color: #111;
-      font-weight: 400;
-      padding: 7px 0;
-    }
-    .snapshot-value a {
-      color: var(--primary);
-      text-decoration: none;
-      font-weight: 400;
-    }
-    .snapshot-value a:hover { text-decoration: underline; }
-
-    /* Certification chips */
-    .cert-chips { display: flex; flex-wrap: wrap; gap: 6px; }
-    .cert-chip {
-      display: inline-flex;
-      align-items: center;
-      padding: 3px 10px;
-      border-radius: 4px;
-      font-size: 12px;
-      font-weight: 400;
+    .cert-badge-card {
       background: #fff;
-      color: #444;
-      border: 1px solid #ddd;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      box-shadow: inset 0 1px 3px rgba(0,0,0,0.04);
+      padding: 10px 14px;
+      min-width: 140px;
+      max-width: 180px;
+    }
+    .cert-badge-name {
+      font-size: 13px;
+      font-weight: 700;
+      color: #0f172a;
+      line-height: 1.3;
+      margin-bottom: 3px;
+    }
+    .cert-badge-desc {
+      font-size: 11px;
+      color: #64748b;
+      line-height: 1.4;
+    }
+    .cert-badge-verified .cert-badge-name { color: #15803d; }
+    .cert-badge-verified {
+      border-color: #bbf7d0;
+      background: #f0fdf4;
     }
 
     /* Awards list */
@@ -628,45 +689,105 @@
     .award-item {
       display: flex;
       align-items: baseline;
-      gap: 8px;
+      gap: 10px;
+      padding: 10px 14px;
+      background: #f8fafc;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
       font-size: 13px;
     }
-    .award-item-name { color: #333; font-weight: 400; }
-    .award-item-year { color: #bbb; font-size: 12px; margin-left: auto; flex-shrink: 0; }
+    .award-item-name { color: #334155; font-weight: 500; flex: 1; }
+    .award-item-year {
+      color: #94a3b8;
+      font-size: 12px;
+      flex-shrink: 0;
+      font-variant-numeric: tabular-nums;
+    }
 
     /* Supply chain */
-    .supply-group { margin-bottom: 12px; }
+    .supply-group { margin-bottom: 14px; }
     .supply-group:last-child { margin-bottom: 0; }
     .supply-group-label {
-      font-size: 11px;
+      font-size: 10px;
       font-weight: 600;
-      color: #9aa0a6;
+      color: #94a3b8;
       text-transform: uppercase;
-      letter-spacing: 0.5px;
+      letter-spacing: 0.8px;
       margin-bottom: 6px;
     }
     .supply-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 4px; }
-    .supply-item { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 6px; }
-    .supply-item::before { content: '•'; color: #9aa0a6; flex-shrink: 0; }
-    .supply-ratio { color: #9aa0a6; font-size: 12px; }
+    .supply-item { font-size: 13px; color: #334155; display: flex; align-items: baseline; gap: 6px; }
+    .supply-item::before { content: '–'; color: #94a3b8; flex-shrink: 0; }
+    .supply-ratio { color: #94a3b8; font-size: 12px; }
 
     /* Patents list */
     .patents-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 6px; }
-    .patent-item { font-size: 13px; color: var(--text); display: flex; align-items: baseline; gap: 6px; }
-    .patent-item::before { content: '•'; color: #9aa0a6; flex-shrink: 0; }
-    .patent-date { color: #9aa0a6; font-size: 12px; white-space: nowrap; }
+    .patent-item { font-size: 13px; color: #334155; display: flex; align-items: baseline; gap: 6px; }
+    .patent-item::before { content: '–'; color: #94a3b8; flex-shrink: 0; }
+    .patent-date { color: #94a3b8; font-size: 12px; white-space: nowrap; }
 
     /* Factory locations */
     .city-chips { display: flex; flex-wrap: wrap; gap: 6px; }
     .city-chip {
       display: inline-block;
-      padding: 3px 10px;
-      border-radius: 12px;
+      padding: 4px 12px;
+      border-radius: 3px;
       font-size: 12px;
       font-weight: 500;
-      background: #f1f3f4;
-      color: var(--text-secondary);
-      border: 1px solid var(--border);
+      background: #f8fafc;
+      color: #334155;
+      border: 1px solid #e2e8f0;
+    }
+
+    /* Snapshot grid (address + stock) */
+    .snapshot-grid {
+      display: grid;
+      grid-template-columns: 100px 1fr;
+      gap: 0;
+      font-size: 13px;
+    }
+    .snapshot-label {
+      color: #94a3b8;
+      font-size: 11px;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      padding: 7px 0;
+    }
+    .snapshot-value {
+      color: #334155;
+      font-weight: 400;
+      padding: 7px 0;
+    }
+    .snapshot-value a {
+      color: #0066cc;
+      text-decoration: none;
+    }
+    .snapshot-value a:hover { text-decoration: underline; }
+
+    /* Similar Companies */
+    .similar-list { display: flex; flex-direction: column; gap: 8px; }
+    .similar-item {
+      padding: 12px 14px;
+      background: #fff;
+      border: 1px solid #e2e8f0;
+      border-radius: 6px;
+      cursor: pointer;
+      transition: box-shadow 0.15s, border-color 0.15s;
+    }
+    .similar-item:hover {
+      box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+      border-color: #cbd5e1;
+    }
+    .similar-item-name {
+      font-size: 13px;
+      font-weight: 600;
+      color: #0f172a;
+    }
+    .similar-item-meta {
+      font-size: 12px;
+      color: #94a3b8;
+      margin-top: 2px;
     }
 
     /* Modal loading */
@@ -684,10 +805,10 @@
     @media (max-width: 480px) {
       .modal-overlay { padding: 0; }
       .modal-content { border-radius: 0; min-height: 100vh; }
-      .modal-header { padding: 24px 20px 18px; }
-      #modalBody { padding: 0 20px 24px; }
-      .snapshot-grid { grid-template-columns: 100px 1fr; }
-      .contact-sep { display: inline; }
+      .modal-header { padding: 22px 20px 20px; }
+      #modalBodyInner { padding: 0 20px 28px !important; }
+      .quick-facts { grid-template-columns: repeat(2, 1fr); }
+      .contact-grid { grid-template-columns: 1fr; }
     }
 
     /* ── Award Badge (profile sidebar) ── */
@@ -1091,75 +1212,82 @@
 
       <!-- Content (hidden while loading) -->
       <div id="modalBody" style="display:none">
-        <!-- Header -->
+        <!-- Header bar -->
         <div class="modal-header">
           <div id="modalNameEn" class="modal-name-en"></div>
           <div id="modalNameZh" class="modal-name-zh"></div>
           <div id="modalBadges" class="modal-badges"></div>
         </div>
 
-        <!-- Company Profile (always shown when available) -->
-        <div id="modalProfile" style="
-          display: none;
-          margin: 20px 0 0;
-          font-size: 14px;
-          line-height: 1.7;
-          color: #333;
-        "></div>
+        <!-- Quick Facts + rest of body -->
+        <div style="padding: 0 32px 32px;" id="modalBodyInner">
 
-        <!-- Contact (only shown when phone/email/website exists) -->
-        <div class="modal-section" id="modalSectionContact" style="display:none">
-          <h3>Contact</h3>
-          <div id="modalContactLines"></div>
-        </div>
+          <!-- Quick Facts strip -->
+          <div class="quick-facts" id="modalQuickFacts">
+            <!-- cards injected by JS -->
+          </div>
 
-        <!-- Company Snapshot -->
-        <div class="modal-section" id="modalSectionSnapshot">
-          <h3>Company Snapshot</h3>
-          <div class="snapshot-grid" id="modalSnapshotGrid"></div>
-        </div>
+          <!-- About / Overview -->
+          <div class="modal-section" id="modalSectionProfile" style="display:none">
+            <div class="modal-section-title">Overview</div>
+            <div id="modalProfile" class="modal-overview"></div>
+          </div>
 
-        <!-- Certifications -->
-        <div class="modal-section" id="modalSectionCerts" style="display:none">
-          <h3>Certifications</h3>
-          <div class="cert-chips" id="modalCertChips"></div>
-        </div>
+          <!-- Contact Information -->
+          <div class="modal-section" id="modalSectionContact" style="display:none">
+            <div class="modal-section-title">Contact Information</div>
+            <div class="contact-grid" id="modalContactLines"></div>
+          </div>
 
-        <!-- Awards & Programs -->
-        <div class="modal-section" id="modalSectionAwards" style="display:none">
-          <h3>Awards &amp; Programs</h3>
-          <div class="awards-list" id="modalAwardsList"></div>
-        </div>
+          <!-- Additional details (address, stock) -->
+          <div class="modal-section" id="modalSectionSnapshot" style="display:none">
+            <div class="modal-section-title">Company Details</div>
+            <div class="snapshot-grid" id="modalSnapshotGrid"></div>
+          </div>
 
-        <!-- Supply Chain -->
-        <div class="modal-section" id="modalSectionSupply" style="display:none">
-          <h3>Supply Chain</h3>
-          <div id="modalSupplyContent"></div>
-        </div>
+          <!-- Certifications & Standards -->
+          <div class="modal-section" id="modalSectionCerts" style="display:none">
+            <div class="modal-section-title">Certifications &amp; Standards</div>
+            <div class="cert-badges-grid" id="modalCertChips"></div>
+          </div>
 
-        <!-- Patents -->
-        <div class="modal-section" id="modalSectionPatents" style="display:none">
-          <h3>Patents</h3>
-          <div id="modalPatentsCount" style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
-          <ul class="patents-list" id="modalPatentsList"></ul>
-        </div>
+          <!-- Awards & Recognition -->
+          <div class="modal-section" id="modalSectionAwards" style="display:none">
+            <div class="modal-section-title">Awards &amp; Recognition</div>
+            <div class="awards-list" id="modalAwardsList"></div>
+          </div>
 
-        <!-- Factory Locations -->
-        <div class="modal-section" id="modalSectionLocations">
-          <h3>Factory Locations</h3>
-          <div id="modalLocationsText" style="font-size:13px;color:var(--text-secondary);margin-bottom:8px;"></div>
-          <div class="city-chips" id="modalCityChips"></div>
-        </div>
+          <!-- Manufacturing Locations -->
+          <div class="modal-section" id="modalSectionLocations">
+            <div class="modal-section-title">Manufacturing Locations</div>
+            <div id="modalLocationsText" style="font-size:13px;color:#64748b;margin-bottom:10px;"></div>
+            <div class="city-chips" id="modalCityChips"></div>
+          </div>
 
-        <!-- Similar Companies -->
-        <div class="modal-section" id="modalSectionSimilar" style="display:none">
-          <h3>Similar Companies</h3>
-          <div id="modalSimilarList" style="display:flex;flex-direction:column;gap:10px;"></div>
-        </div>
+          <!-- Supply Chain -->
+          <div class="modal-section" id="modalSectionSupply" style="display:none">
+            <div class="modal-section-title">Supply Chain</div>
+            <div id="modalSupplyContent"></div>
+          </div>
 
-        <!-- Google fallback -->
-        <div class="google-fallback">
-          <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">Search Search "<span id="qlGoogleLabel"></span>" on Google</a>
+          <!-- Patents -->
+          <div class="modal-section" id="modalSectionPatents" style="display:none">
+            <div class="modal-section-title">Patents</div>
+            <div id="modalPatentsCount" style="font-size:13px;color:#64748b;margin-bottom:8px;"></div>
+            <ul class="patents-list" id="modalPatentsList"></ul>
+          </div>
+
+          <!-- Similar Companies -->
+          <div class="modal-section" id="modalSectionSimilar" style="display:none">
+            <div class="modal-section-title">Similar Companies</div>
+            <div class="similar-list" id="modalSimilarList"></div>
+          </div>
+
+          <!-- Google fallback -->
+          <div class="google-fallback">
+            <a id="qlGoogle" href="#" target="_blank" rel="noopener noreferrer">Search "<span id="qlGoogleLabel"></span>" on Google</a>
+          </div>
+
         </div>
       </div>
 
@@ -1673,7 +1801,7 @@
         const profile = f0.company_profile_en || ''
         const profileEl = document.getElementById('modalProfile')
         profileEl.textContent = profile
-        profileEl.style.display = profile ? 'block' : 'none'
+        showSection('modalSectionProfile', !!profile)
 
         // ── Google fallback link ──────────────────────────────
         const googleQuery = f0.name_zh || nameZh || nameEn
@@ -1692,8 +1820,11 @@
           badgeItems.push(`<span class="modal-badge modal-badge-city">${escapeHtml(cityLabel)}</span>`)
         }
 
-        // scan factories for listing info
-        // stock info moved to Company Snapshot section below
+        // Stock badge in header
+        const listedBadgeFactory = factories.find(fc => fc.is_listed || fc.stock_id)
+        if (listedBadgeFactory && listedBadgeFactory.stock_id) {
+          badgeItems.push(`<span class="modal-badge modal-badge-listed">Stock TW: ${escapeHtml(listedBadgeFactory.stock_id)}</span>`)
+        }
 
         document.getElementById('modalBadges').innerHTML = badgeItems.join('')
 
@@ -1707,29 +1838,44 @@
           if (phone && email && website) break
         }
 
-        // Contact section — inline with · separator
-        const contactParts = []
+        // Contact section — grid layout
+        const contactFields = []
         if (phone) {
           const phoneFormatted = escapeHtml(formatPhoneIntl(phone))
-          contactParts.push(`<a href="tel:${phoneFormatted}">${phoneFormatted}</a>`)
+          contactFields.push(`<div class="contact-field">
+            <span class="contact-field-label">Phone</span>
+            <span class="contact-field-value"><a href="tel:${phoneFormatted}">${phoneFormatted}</a></span>
+          </div>`)
         }
         if (website) {
           const href = website.startsWith('http') ? website : `https://${website}`
-          // show domain only
-          let displayDomain = website.replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
-          contactParts.push(`<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayDomain)}</a>`)
+          const displayDomain = website.replace(/^https?:\/\//i, '').replace(/\/.*$/, '')
+          contactFields.push(`<div class="contact-field">
+            <span class="contact-field-label">Website</span>
+            <span class="contact-field-value"><a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(displayDomain)}</a></span>
+          </div>`)
         }
         if (email) {
-          contactParts.push(`<a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a>`)
+          contactFields.push(`<div class="contact-field">
+            <span class="contact-field-label">Email</span>
+            <span class="contact-field-value"><a href="mailto:${escapeHtml(email)}">${escapeHtml(email)}</a></span>
+          </div>`)
+        }
+        // Address
+        const addressDisplay = f0.address_zh || f0.address_en || ''
+        if (addressDisplay) {
+          const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(addressDisplay)}`
+          contactFields.push(`<div class="contact-field" style="grid-column: 1 / -1;">
+            <span class="contact-field-label">Address</span>
+            <span class="contact-field-value"><a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(addressDisplay)}</a></span>
+          </div>`)
         }
 
-        const hasContactInfo = contactParts.length > 0
-        document.getElementById('modalContactLines').innerHTML = hasContactInfo
-          ? `<div class="contact-inline">${contactParts.join('<span class="contact-sep">·</span>')}</div>`
-          : ''
+        const hasContactInfo = contactFields.length > 0
+        document.getElementById('modalContactLines').innerHTML = contactFields.join('')
         showSection('modalSectionContact', hasContactInfo)
 
-        // ── Company Snapshot ──────────────────────────────────
+        // ── Quick Facts + Company Details ─────────────────────
         // earliest registration date across all factories
         let earliestDate = null
         for (const fc of factories) {
@@ -1747,28 +1893,38 @@
           }
         }
 
-        const factoryCount   = factories.length || (summary.total_factories ?? 0)
-        const uniqueCities   = summary.cities ? summary.cities.length : new Set(factories.map(fc => fc.city_en).filter(Boolean)).size
-        const snapshotRows   = []
-        snapshotRows.push(['Tax ID', escapeHtml(f0.tax_id || taxId)])
-        if (earliestDate)  snapshotRows.push(['Founded', escapeHtml(formatDate(earliestDate))])
-        if (maxCapital)    snapshotRows.push(['Capital', escapeHtml(formatCapitalFull(maxCapital))])
-        snapshotRows.push([
-          'Factories',
-          escapeHtml(
-            factoryCount
-              ? `${factoryCount}${uniqueCities > 1 ? ` (across ${uniqueCities} cities)` : ''}`
-              : '—'
-          )
-        ])
-        const address = f0.address_zh || f0.address_en || ''
-        if (address) {
-          const mapsUrl = `https://www.google.com/maps/search/${encodeURIComponent(address)}`
-          snapshotRows.push([
-            'Address',
-            `<a href="${escapeHtml(mapsUrl)}" target="_blank" rel="noopener noreferrer">${escapeHtml(address)}</a>`
-          ])
+        const factoryCount = factories.length || (summary.total_factories ?? 0)
+        const uniqueCities = summary.cities ? summary.cities.length : new Set(factories.map(fc => fc.city_en).filter(Boolean)).size
+        const industryLabel = f0.industry_en || (summary.industries && summary.industries[0]) || '—'
+
+        // Quick Facts cards
+        const quickFactCards = []
+        if (earliestDate) {
+          const foundedYear = new Date(earliestDate).getFullYear()
+          quickFactCards.push({ value: String(foundedYear), label: 'Founded' })
         }
+        if (maxCapital) {
+          quickFactCards.push({ value: formatCapital(maxCapital), label: 'Capital' })
+        }
+        if (factoryCount) {
+          quickFactCards.push({ value: String(factoryCount), label: factoryCount === 1 ? 'Factory' : 'Factories' })
+        }
+        if (industryLabel && industryLabel !== '—') {
+          // Truncate long industry names
+          const shortIndustry = industryLabel.length > 22 ? industryLabel.slice(0, 20) + '...' : industryLabel
+          quickFactCards.push({ value: escapeHtml(shortIndustry), label: 'Industry Sector' })
+        }
+
+        document.getElementById('modalQuickFacts').innerHTML = quickFactCards.map(card =>
+          `<div class="quick-fact-card">
+            <div class="quick-fact-value">${card.value}</div>
+            <div class="quick-fact-label">${escapeHtml(card.label)}</div>
+          </div>`
+        ).join('')
+
+        // Details snapshot (Tax ID + Stock)
+        const snapshotRows = []
+        snapshotRows.push(['Tax ID', escapeHtml(f0.tax_id || taxId)])
 
         // Stock listing with Yahoo Finance link
         const listedFactory = factories.find(fc => fc.is_listed || fc.stock_id)
@@ -1776,27 +1932,66 @@
           const yahooUrl = `https://tw.stock.yahoo.com/quote/${listedFactory.stock_id}/profile`
           snapshotRows.push([
             'Stock',
-            `TW: ${escapeHtml(listedFactory.stock_id)} <a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" style="color:#999;font-size:11px;margin-left:6px;text-decoration:none;">Yahoo Finance &rarr;</a>`
+            `TW: ${escapeHtml(listedFactory.stock_id)} <a href="${escapeHtml(yahooUrl)}" target="_blank" rel="noopener noreferrer" style="font-size:11px;margin-left:6px;">Yahoo Finance &rarr;</a>`
           ])
         }
 
         document.getElementById('modalSnapshotGrid').innerHTML = snapshotRows.map(([label, val]) =>
           `<span class="snapshot-label">${label}</span><span class="snapshot-value">${val}</span>`
         ).join('')
+        showSection('modalSectionSnapshot', snapshotRows.length > 0)
 
         // ── Certifications ────────────────────────────────────
+        const CERT_DESCRIPTIONS = {
+          'ISO 9001': 'Quality Management',
+          'ISO 14001': 'Environmental Management',
+          'ISO 45001': 'Occupational H&S',
+          'ISO 13485': 'Medical Devices',
+          'ISO 22000': 'Food Safety',
+          'ISO 27001': 'Information Security',
+          'ISO 50001': 'Energy Management',
+          'IATF 16949': 'Automotive',
+          'AS 9100': 'Aerospace',
+          'AS9100': 'Aerospace',
+          'QC 080000': 'Hazardous Substance',
+          'IECQ QC 080000': 'Electronic Components Quality',
+          'RoHS': 'EU Restriction of Hazardous Substances',
+          'CE Marking': 'European Conformity',
+          'CE': 'European Conformity',
+          'UL Listed': 'UL Safety',
+          'UL': 'UL Safety',
+          'NADCAP': 'Aerospace Process',
+          'HACCP': 'Food Hygiene',
+          'FSSC 22000': 'Food Safety System',
+          'OEKO-TEX': 'Textile Safety',
+          'Oeko-Tex': 'Textile Safety',
+          'bluesign': 'Sustainable Textiles',
+          'IECQ': 'Electronic Components Quality',
+          'GMP': 'Good Manufacturing Practice',
+          'RC 14001': 'Responsible Care',
+        }
+
         const allCerts = new Set()
+        let certsAreTypical = false
         for (const fc of factories) {
           if (fc.certifications_en) {
             let raw = fc.certifications_en
-            if (raw.startsWith('Typical: ')) raw = raw.slice('Typical: '.length)
+            if (raw.startsWith('Typical: ')) {
+              certsAreTypical = true
+              raw = raw.slice('Typical: '.length)
+            }
             raw.split(',').map(s => s.trim()).filter(Boolean).forEach(c => allCerts.add(c))
           }
         }
         if (allCerts.size > 0) {
-          document.getElementById('modalCertChips').innerHTML = [...allCerts].map(cert =>
-            `<span class="cert-chip">${escapeHtml(cert)}</span>`
-          ).join('')
+          document.getElementById('modalCertChips').innerHTML = [...allCerts].map(cert => {
+            const desc = CERT_DESCRIPTIONS[cert] || ''
+            const isVerified = !certsAreTypical
+            return `<div class="cert-badge-card${isVerified ? ' cert-badge-verified' : ''}">
+              <div class="cert-badge-name">${escapeHtml(cert)}</div>
+              ${desc ? `<div class="cert-badge-desc">${escapeHtml(desc)}</div>` : ''}
+            </div>`
+          }).join('')
           showSection('modalSectionCerts', true)
         } else {
           showSection('modalSectionCerts', false)
@@ -1910,9 +2105,9 @@
               document.getElementById('modalSimilarList').innerHTML = similar.map(s => {
                 const nameDisplay = escapeHtml(s.name_en || s.name_zh || s.tax_id)
                 const meta = [s.industry_en, s.city_en].filter(Boolean).join(' · ')
-                return `<div style="padding:12px 14px;background:#fff;border:1px solid #ebebeb;border-radius:8px;cursor:pointer;transition:box-shadow 0.15s;" onmouseenter="this.style.boxShadow='0 2px 8px rgba(0,0,0,0.08)'" onmouseleave="this.style.boxShadow='none'" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
-                  <div style="font-weight:500;font-size:13px;color:#111;">${nameDisplay}</div>
-                  ${meta ? `<div style="font-size:12px;color:#999;margin-top:3px;">${escapeHtml(meta)}</div>` : ''}
+                return `<div class="similar-item" onclick="openCompanyModal('${escapeHtml(s.tax_id)}')">
+                  <div class="similar-item-name">${nameDisplay}</div>
+                  ${meta ? `<div class="similar-item-meta">${escapeHtml(meta)}</div>` : ''}
                 </div>`
               }).join('')
               showSection('modalSectionSimilar', true)
